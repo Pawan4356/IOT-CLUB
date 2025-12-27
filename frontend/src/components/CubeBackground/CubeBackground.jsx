@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { vs, fs } from "./cubeData";
+import { vs, fs } from "./CubeData";
 
 const BACKGROUND = "#101010";
 const FOREGROUND = "#c05621";
