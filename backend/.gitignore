@@ -1,0 +1,25 @@
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Dependency directory
+node_modules/
+
+# Build artifacts
+/dist/
+/build/
+
+# Environment variables
+.env
+.env.local
+
+# Log files
+npm-debug.log*
+*.log
