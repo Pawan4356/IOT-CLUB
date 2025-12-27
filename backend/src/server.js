@@ -24,7 +24,7 @@ app.get("/events", (request, response) => {
 
 const startServer = async () => {
   try {
-    await connectDB();
+    // await connectDB();
     app.listen(port, () => {
       console.log(`server listening at ${port}`);
     });
