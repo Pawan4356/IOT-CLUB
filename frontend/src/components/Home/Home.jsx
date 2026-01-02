@@ -2,8 +2,16 @@ import React from 'react'
 
 function Home() {
   return (
-    <div className='flex justify-center'>
-      <h1 className='text-5xl text-center text-orange-700 font-mono bg-black min-w-12.5 m-3 p-3 border-2 rounded-2xl border-white'>Home</h1>
+    <div className='flex flex-col justify-center bg-linear-to-br from-[#EBEBEB] via-gray-200 to-gray-100 min-h-screen'>
+      <div className='flex flex-col lg:flex-row justify-between items-center relative px-4 '>
+        <img
+          src="Cturtle.png"
+          alt="Turtle"
+          className="sm:h-80 md:h-96 lg:h-[50vh] mx-auto"
+        />
+      </div>
+
+
     </div>
   )
 }
