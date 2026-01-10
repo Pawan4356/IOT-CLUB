@@ -1,14 +1,36 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const Footer = () => {
   const [activeModal, setActiveModal] = useState(null);
 
+  // Handle URL hash changes to open modals
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.substring(1); // Remove the '#'
+      if (['terms', 'privacy', 'refund'].includes(hash)) {
+        setActiveModal(hash);
+      }
+    };
+
+    // Check hash on component mount
+    handleHashChange();
+
+    // Listen for hash changes
+    window.addEventListener('hashchange', handleHashChange);
+
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, []);
+
   const openModal = (modalName) => {
     setActiveModal(modalName);
+    window.location.hash = modalName; // Update URL hash
   };
 
   const closeModal = () => {
     setActiveModal(null);
+    history.pushState('', document.title, window.location.pathname + window.location.search); // Clear hash
   };
 
   const Modal = ({ isOpen, onClose, title, children }) => {
