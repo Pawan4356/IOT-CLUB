@@ -6,13 +6,9 @@ import ClickSpark from './components/effects/ClickSpark.jsx';
 function App() {
   return (
     <>
-      {/* <MeshBG /> */}
       <Header />
-      {/* <CubeBackground /> */}
-
-        <Outlet />
+      <Outlet />
     </>
-
   )
 }
 

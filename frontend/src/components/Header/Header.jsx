@@ -12,12 +12,8 @@ export default function Header() {
 
   const navItems = [
     { name: 'Home', path: '/' },
-    { name: 'About', path: '/about' },
-    { name: 'Events', path: '/events' },
-    { name: 'Projects', path: '/projects' },
     { name: 'Team', path: '/team' },
     { name: 'Gallery', path: '/gallery' },
-    { name: 'Reports', path: '/reports' },
     { name: 'Contact', path: '/contact' },
   ]
   
@@ -40,7 +36,7 @@ export default function Header() {
         <div className="flex flex-wrap justify-between items-center mx-auto max-w-7xl">
           <Link to="/" className="flex items-center">
             <img
-              src="/IOTHeaderLogo.png"
+              src="/IOTHeaderLogo_1.png"
               className="mr-3 h-12 sm:h-14 md:h-15"
               alt="Logo"
             />
