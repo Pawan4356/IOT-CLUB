@@ -21,6 +21,7 @@ function Home() {
     const [eventsLoading, setEventsLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [showAuthModal, setShowAuthModal] = useState(false);
+    const [authMode, setAuthMode] = useState('login');
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitStatus, setSubmitStatus] = useState(null);
@@ -295,11 +296,11 @@ function Home() {
                 <AuthModal
                     isOpen={showAuthModal}
                     onClose={() => setShowAuthModal(false)}
-                    initialMode="login"
+                    initialMode={authMode}
                 />
 
                 {/* HERO SECTION */}
-                <section id="hero" className="relative min-h-[90vh] flex flex-col justify-center items-center text-center px-6 overflow-hidden">
+                <section id="hero" className="relative min-h-[70vh] sm:min-h-[80vh] lg:min-h-[90vh] flex flex-col justify-center items-center text-center px-4 sm:px-6 overflow-hidden">
                     {/* Background Image */}
                     <div
                         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -318,39 +319,40 @@ function Home() {
                     </div>
 
                     <div className="relative z-10 max-w-4xl mx-auto">
-                        <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold mb-6 text-white">
+                        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 sm:mb-6 text-white">
                             Welcome to the SCET IoT Club
                         </h1>
 
-                        <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold mb-12 text-gray-300">
+                        <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold mb-6 sm:mb-8 lg:mb-12 text-gray-300">
                             For the Students, by the Students
                         </h2>
 
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                            <button
-                                onClick={() =>
-                                    document
-                                        .getElementById("about")
-                                        .scrollIntoView({ behavior: "smooth" })
-                                }
-                                className="group px-8 py-4 bg-linear-to-r from-orange-600 to-orange-700 rounded-xl font-semibold hover:from-orange-700 hover:to-orange-800 transition-all shadow-xl hover:shadow-2xl transform hover:-translate-y-1 flex items-center gap-2 text-lg"
-                            >
-                                <span>Get Started</span>
-                                <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                                </svg>
-                            </button>
-                        </div>
+                        {!user && (
+                            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                                <button
+                                    onClick={() => {
+                                        setAuthMode('signup');
+                                        setShowAuthModal(true);
+                                    }}
+                                    className="group px-8 py-4 bg-linear-to-r from-orange-600 to-orange-700 rounded-xl font-semibold hover:from-orange-700 hover:to-orange-800 transition-all shadow-xl hover:shadow-2xl transform hover:-translate-y-1 flex items-center gap-2 text-lg"
+                                >
+                                    <span>Get Started</span>
+                                    <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                    </svg>
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </section>
 
                 {/* EVENTS SECTION */}
                 <section
                     id="events"
-                    className="relative py-24 px-6 bg-linear-to-b from-[#f7f7fb] to-white text-gray-900"
+                    className="relative py-12 sm:py-16 lg:py-24 px-4 sm:px-6 bg-linear-to-b from-[#f7f7fb] to-white text-gray-900"
                 >
                     <div className="max-w-7xl mx-auto">
-                        <div className="text-center mb-16">
+                        <div className="text-center mb-8 sm:mb-12 lg:mb-16">
                             <div className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-orange-100 rounded-full mb-6">
                                 <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -448,9 +450,9 @@ function Home() {
                 </section>
 
                 {/* PROJECTS SECTION */}
-                <section id="projects" className="py-24 px-6 bg-linear-to-b from-[#1b1833] to-[#0f0c1d] text-white">
+                <section id="projects" className="py-12 sm:py-16 lg:py-24 px-4 sm:px-6 bg-linear-to-b from-[#1b1833] to-[#0f0c1d] text-white">
                     <div className="max-w-7xl mx-auto">
-                        <div className="text-center mb-16">
+                        <div className="text-center mb-8 sm:mb-12 lg:mb-16">
                             <h2 className="text-4xl sm:text-5xl font-bold mb-4">Completed Projects</h2>
                             <p className="text-xl text-gray-300">Innovative IoT solutions developed by our students</p>
                         </div>
@@ -549,7 +551,7 @@ function Home() {
                 </section>
 
                 {/* ABOUT SECTION */}
-                <section id="about" className="py-24 px-6 bg-linear-to-b from-[#f7f7fb] to-white text-gray-900">
+                <section id="about" className="py-12 sm:py-16 lg:py-24 px-4 sm:px-6 bg-linear-to-b from-[#f7f7fb] to-white text-gray-900">
                     <div className="max-w-7xl mx-auto">
                         <div className="grid lg:grid-cols-2 gap-12 items-center">
                             <div className="relative">
@@ -605,9 +607,9 @@ function Home() {
                 </section>
 
                 {/* STATS SECTION */}
-                <section id="counts" className="py-24 px-6 bg-linear-to-b from-[#1b1833] to-[#0f0c1d] text-white">
+                <section id="counts" className="py-12 sm:py-16 lg:py-24 px-4 sm:px-6 bg-linear-to-b from-[#1b1833] to-[#0f0c1d] text-white">
                     <div className="max-w-7xl mx-auto">
-                        <div className="text-center mb-16">
+                        <div className="text-center mb-8 sm:mb-12 lg:mb-16">
                             <h2 className="text-4xl sm:text-5xl font-bold mb-4">By The Numbers</h2>
                             <p className="text-xl text-gray-300">Our journey since inception</p>
                         </div>
@@ -644,9 +646,9 @@ function Home() {
                 </section>
 
                 {/* SERVICES SECTION */}
-                <section id="services" className="py-24 px-6 bg-linear-to-b from-white to-[#f7f7fb] text-gray-900">
+                <section id="services" className="py-12 sm:py-16 lg:py-24 px-4 sm:px-6 bg-linear-to-b from-white to-[#f7f7fb] text-gray-900">
                     <div className="max-w-6xl mx-auto">
-                        <div className="text-center mb-16">
+                        <div className="text-center mb-8 sm:mb-12 lg:mb-16">
                             <h2 className="text-4xl sm:text-5xl font-bold text-[#221F3B] mb-4">Services</h2>
                             <p className="text-xl text-gray-600">Core Activities by SCET IoT Club</p>
                         </div>
@@ -689,49 +691,49 @@ function Home() {
                 </section>
 
                 {/* FACULTY COORDINATORS SECTION */}
-                <section id="doctors" className="py-24 px-6 bg-linear-to-b from-[#1b1833] to-[#0f0c1d] text-white">
+                <section id="doctors" className="py-12 sm:py-16 lg:py-24 px-4 sm:px-6 bg-linear-to-b from-[#1b1833] to-[#0f0c1d] text-white">
                     <div className="max-w-7xl mx-auto">
-                        <div className="text-center mb-16">
+                        <div className="text-center mb-8 sm:mb-12 lg:mb-16">
                             <h2 className="text-4xl sm:text-5xl font-bold mb-4">Faculty Co-ordinators</h2>
                             <p className="text-xl text-gray-300">In a Guidance under the best faculty and having a expertise in IoT</p>
                         </div>
-                        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-                            <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 flex gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto">
+                            <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-5 sm:p-8 border border-white/10 flex flex-col sm:flex-row gap-4 sm:gap-6 items-center sm:items-start text-center sm:text-left">
                                 <div className="shrink-0">
                                     <img
                                         src="/teammembers/parizakamboj.jpg"
                                         alt="Prof.(Dr.) Pariza Kamboj"
-                                        className="w-32 h-32 rounded-xl object-cover border-2 border-orange-500/50"
+                                        className="w-24 h-24 sm:w-32 sm:h-32 rounded-xl object-cover border-2 border-orange-500/50"
                                         onError={(e) => {
                                             e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128"%3E%3Crect width="128" height="128" fill="%23f3f4f6"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="12" fill="%236b7280"%3EPhoto%3C/text%3E%3C/svg%3E';
                                         }}
                                     />
                                 </div>
-                                <div>
-                                    <h4 className="text-2xl font-bold mb-2 text-orange-400">Prof.(Dr.) Pariza Kamboj</h4>
-                                    <span className="text-gray-400 mb-3 block">Head Of Department</span>
-                                    <p className="text-gray-300 text-sm leading-relaxed">
+                                <div className="flex-1">
+                                    <h4 className="text-xl sm:text-2xl font-bold mb-2 text-orange-400">Prof. (Dr.) Pariza Kamboj</h4>
+                                    <span className="text-gray-400 mb-3 block text-sm sm:text-base">Professor</span>
+                                    <p className="text-gray-300 text-xs sm:text-sm leading-relaxed">
                                         Qualification : Ph.D. (Comp. Engg.)<br />
                                         Designation : Professor<br />
                                         Email : pariza.kamboj@scet.ac.in
                                     </p>
                                 </div>
                             </div>
-                            <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 flex gap-6">
+                            <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-5 sm:p-8 border border-white/10 flex flex-col sm:flex-row gap-4 sm:gap-6 items-center sm:items-start text-center sm:text-left">
                                 <div className="shrink-0">
                                     <img
                                         src="/teammembers/vandanajoshi.jpg"
                                         alt="Prof. Vandana Joshi"
-                                        className="w-32 h-32 rounded-xl object-cover border-2 border-orange-500/50"
+                                        className="w-24 h-24 sm:w-32 sm:h-32 rounded-xl object-cover border-2 border-orange-500/50"
                                         onError={(e) => {
                                             e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128"%3E%3Crect width="128" height="128" fill="%23f3f4f6"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="12" fill="%236b7280"%3EPhoto%3C/text%3E%3C/svg%3E';
                                         }}
                                     />
                                 </div>
-                                <div>
-                                    <h4 className="text-2xl font-bold mb-2 text-orange-400">Prof. Vandana Joshi</h4>
-                                    <span className="text-gray-400 mb-3 block">Assistant Professor</span>
-                                    <p className="text-gray-300 text-sm leading-relaxed">
+                                <div className="flex-1">
+                                    <h4 className="text-xl sm:text-2xl font-bold mb-2 text-orange-400">Prof. Vandana Joshi</h4>
+                                    <span className="text-gray-400 mb-3 block text-sm sm:text-base">Assistant Professor</span>
+                                    <p className="text-gray-300 text-xs sm:text-sm leading-relaxed">
                                         Qualification : M.Tech (Computer Science & Engg)<br />
                                         Designation : Assistant Professor<br />
                                         Email : vandana.joshi@scet.ac.in
@@ -743,9 +745,9 @@ function Home() {
                 </section>
 
                 {/* FAQ SECTION */}
-                <section id="faq" className="py-24 px-6 bg-linear-to-b from-[#f7f7fb] to-white text-gray-900">
+                <section id="faq" className="py-12 sm:py-16 lg:py-24 px-4 sm:px-6 bg-linear-to-b from-[#f7f7fb] to-white text-gray-900">
                     <div className="max-w-4xl mx-auto">
-                        <div className="text-center mb-16">
+                        <div className="text-center mb-8 sm:mb-12 lg:mb-16">
                             <h2 className="text-4xl sm:text-5xl font-bold text-[#221F3B] mb-4">Frequently Asked Questions</h2>
                             <p className="text-xl text-gray-600">
                                 To reaching out the most common questions asked by students, for that we have shortlisted some frequently asked questions mentioned below with answers.
