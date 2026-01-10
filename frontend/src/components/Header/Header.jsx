@@ -14,7 +14,7 @@ export default function Header() {
     { name: 'Home', path: '/' },
     { name: 'Team', path: '/team' },
     { name: 'Gallery', path: '/gallery' },
-    // { name: 'Contact', path: '/contact' },
+    { name: 'Contact', path: '/contact' },
   ]
   
   const navLinkClass = ({ isActive }) =>
