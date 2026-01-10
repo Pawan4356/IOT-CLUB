@@ -13,7 +13,7 @@ const router = createBrowserRouter(
       <Route path='' element={<Home />} />
       <Route path='team' element={<TeamMembers />} />
       <Route path='gallery' element={<Gallery />} />
-      {/* <Route path='contact' element={<Contact />} /> */}
+      <Route path='contact' element={<Contact />} />
       <Route path='auth/callback' element={<AuthCallback />} />
       <Route path='*' element={<NotFound />} />
     </Route>
