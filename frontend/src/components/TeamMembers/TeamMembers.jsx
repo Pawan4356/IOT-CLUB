@@ -2,6 +2,20 @@ import React, { useState, useEffect } from 'react';
 
 // Team members data - can be moved to Supabase later
 const TEAM_MEMBERS = [
+  { name: 'Pawankumar Navinchandra', degree: 'B.Tech Computer Engineering', batch: '2027', image: '/teammembers/Pawan.jpg' },
+  { name: 'Krutarth Patel', degree: 'B.Tech Computer Engineering', batch: '2027', image: '/teammembers/Krutarth-Patel.png' },
+  { name: 'Vadid Shaikh', degree: 'B.Tech Computer Engineering', batch: '2027', image: '/teammembers/Vadid.png' },
+  { name: 'Vijay Singh', degree: 'B.Tech Computer Engineering', batch: '2027', image: '/teammembers/dummy.png' },
+  { name: 'Mangalya Desai', degree: 'B.Tech Computer Engineering', batch: '2027', image: '/teammembers/dummy.png' },
+  { name: 'Devanshu Mangal', degree: 'B.Tech Computer Engineering', batch: '2027', image: '/teammembers/dummy.png' },
+  { name: 'Dhairya Prajapati', degree: 'B.Tech Computer Engineering', batch: '2027', image: '/teammembers/Dhairya-Prajapati.png' },
+  { name: 'Rudra Baru', degree: 'B.Tech Computer Engineering', batch: '2027', image: '/teammembers/dummy.png' },
+  { name: 'Krish Patel', degree: 'B.Tech Computer Engineering', batch: '2027', image: '/teammembers/dummy.png' },
+  { name: 'Aarav Patel', degree: 'B.Tech Computer Engineering', batch: '2027', image: '/teammembers/Aarav-Patel.png' },
+  { name: 'Aayushi', degree: 'B.Tech Computer Engineering', batch: '2027', image: '/teammembers/dummy.png' },
+  { name: 'Dev Patel', degree: 'B.Tech Computer Engineering', batch: '2027', image: '/teammembers/dummy.png' },
+  { name: 'Krutarth', degree: 'B.Tech Electronics & Communication', batch: '2028', image: '/teammembers/dummy.png' },
+  { name: 'Dev', degree: 'B.Tech Electronics & Communication', batch: '2028', image: '/teammembers/dummy.png' },
   { name: 'Meet Jariwala', degree: 'B.Tech Computer Engineering', batch: '2026', image: '/teammembers/Meet Jariwala.png' },
   { name: 'Fenil Patel', degree: 'B.Tech Computer Engineering', batch: '2026', image: '/teammembers/Fenil_patel.jpg' },
   { name: 'Aadyanshi Patel', degree: 'B.Tech Computer Engineering', batch: '2026', image: '/teammembers/Adyanshi Patel.jpg' },
@@ -37,20 +51,6 @@ const TEAM_MEMBERS = [
   { name: 'Keyur Kakadiya', degree: 'B.E. Computer Engineering', batch: '2023', image: '/teammembers/keyur.jpg' },
   { name: 'Meet Savaj', degree: 'B.E. Computer Engineering', batch: '2023', image: '/teammembers/meet.jpg' },
   { name: 'Vandan', degree: 'B.E. Computer Engineering', batch: '2023', image: '/teammembers/vandan.jpeg' },
-  { name: 'Pawankumar Navinchandra', degree: 'B.Tech Computer Engineering', batch: '2027', image: '/teammembers/dummy.png' },
-  { name: 'Krutarth Patel', degree: 'B.Tech Computer Engineering', batch: '2027', image: '/teammembers/dummy.png' },
-  { name: 'Vadid Shaikh', degree: 'B.Tech Computer Engineering', batch: '2027', image: '/teammembers/dummy.png' },
-  { name: 'Vijay Singh', degree: 'B.Tech Computer Engineering', batch: '2027', image: '/teammembers/dummy.png' },
-  { name: 'Mangalya Desai', degree: 'B.Tech Computer Engineering', batch: '2027', image: '/teammembers/dummy.png' },
-  { name: 'Devanshu Mangal', degree: 'B.Tech Computer Engineering', batch: '2027', image: '/teammembers/dummy.png' },
-  { name: 'Dhairya Prajapati', degree: 'B.Tech Computer Engineering', batch: '2027', image: '/teammembers/dummy.png' },
-  { name: 'Rudra Baru', degree: 'B.Tech Computer Engineering', batch: '2027', image: '/teammembers/dummy.png' },
-  { name: 'Krish Patel', degree: 'B.Tech Computer Engineering', batch: '2027', image: '/teammembers/dummy.png' },
-  { name: 'Aarav Patel', degree: 'B.Tech Computer Engineering', batch: '2027', image: '/teammembers/dummy.png' },
-  { name: 'Aayushi', degree: 'B.Tech Computer Engineering', batch: '2027', image: '/teammembers/dummy.png' },
-  { name: 'Dev Patel', degree: 'B.Tech Computer Engineering', batch: '2027', image: '/teammembers/dummy.png' },
-  { name: 'Krutarth', degree: 'B.Tech Electronics & Communication', batch: '2028', image: '/teammembers/dummy.png' },
-  { name: 'Dev', degree: 'B.Tech Electronics & Communication', batch: '2028', image: '/teammembers/dummy.png' },
 ];
 
 function TeamMembers() {
