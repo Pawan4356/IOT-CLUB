@@ -62,7 +62,7 @@ function TeamMembers() {
     : TEAM_MEMBERS.filter(m => m.batch === selectedBatch);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#f7f7fb] to-white text-gray-900 py-24 px-6">
+    <div className="min-h-screen bg-linear-to-b from-[#f7f7fb] to-white text-gray-900 py-24 px-6">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <h1 className="text-5xl sm:text-6xl font-bold text-[#221F3B] mb-6">Team Members</h1>
