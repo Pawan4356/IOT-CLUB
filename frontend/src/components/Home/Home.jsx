@@ -602,7 +602,7 @@ function Home() {
                                                 </h3>
 
                                                 <p className="text-gray-600 mb-2 leading-relaxed min-h-12">{event.description}</p>
-                                                <p className="text-xs text-gray-500 mb-4">Limited Spots</p>
+                                                <p className="text-xs text-gray-500 mb-4">Limited Spots - 50</p>
 
                                                 <div className="mt-auto pt-6 border-t border-gray-100">
                                                     <div className="flex items-center justify-between">
