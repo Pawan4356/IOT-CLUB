@@ -6,7 +6,7 @@ const TEAM_MEMBERS = [
   { name: 'Krutarth Patel', degree: 'B.Tech Computer Engineering', batch: '2027', image: '/teammembers/Krutarth-Patel.png' },
   { name: 'Vadid Shaikh', degree: 'B.Tech Computer Engineering', batch: '2027', image: '/teammembers/Vadid.png' },
   { name: 'Vijay Singh', degree: 'B.Tech Computer Engineering', batch: '2027', image: '/teammembers/dummy.png' },
-  { name: 'Mangalya Desai', degree: 'B.Tech Computer Engineering', batch: '2027', image: '/teammembers/dummy.png' },
+  { name: 'Mangalya Desai', degree: 'B.Tech Computer Engineering', batch: '2027', image: '/teammembers/Mangalya.png' },
   { name: 'Devanshu Mangal', degree: 'B.Tech Computer Engineering', batch: '2027', image: '/teammembers/Devanshu-Mangal.png' },
   { name: 'Dhairya Prajapati', degree: 'B.Tech Computer Engineering', batch: '2027', image: '/teammembers/Dhairya-Prajapati.png' },
   { name: 'Rudra Baru', degree: 'B.Tech Computer Engineering', batch: '2027', image: '/teammembers/Rudra-Baru.png' },
