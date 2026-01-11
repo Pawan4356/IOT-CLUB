@@ -11,25 +11,46 @@ const FALLBACK_EVENTS = [
         description: "Database connection error...",
         date: "2025-01-15",
         fee: null,
-        status: 'Loading...',
+        status: "Loading...",
+        spots: 50,
     },
 ];
 
 function Home() {
     const { user, loading: authLoading } = useAuth();
+
     const [events, setEvents] = useState([]);
     const [eventsLoading, setEventsLoading] = useState(true);
+
     const [showModal, setShowModal] = useState(false);
     const [showAuthModal, setShowAuthModal] = useState(false);
-    const [authMode, setAuthMode] = useState('login');
+    const [authMode, setAuthMode] = useState("login");
     const [selectedEvent, setSelectedEvent] = useState(null);
+
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitStatus, setSubmitStatus] = useState(null);
     const [errors, setErrors] = useState({});
     const [userProfile, setUserProfile] = useState(null);
     const [showVideoModal, setShowVideoModal] = useState(false);
 
-    // Load events from Supabase
+    // Enrollment state
+    const [enrolledEventIds, setEnrolledEventIds] = useState(new Set());
+    const [enrolledLoading, setEnrolledLoading] = useState(false);
+    const [eventRegistrationStatus, setEventRegistrationStatus] = useState(new Map()); // eventId -> status
+    const [registrationCounts, setRegistrationCounts] = useState(new Map()); // eventId -> count
+    const [countsLoading, setCountsLoading] = useState(false);
+
+    const [formData, setFormData] = useState({
+        name: "",
+        enrollment: "",
+        branch: "",
+        year: "",
+        email: "",
+        phone: "",
+        transactionId: "",
+    });
+
+    // Load events
     useEffect(() => {
         const loadEvents = async () => {
             try {
@@ -38,41 +59,209 @@ function Home() {
                 if (supabaseEvents && supabaseEvents.length > 0) {
                     setEvents(supabaseEvents);
                 } else {
-                    // Use fallback events if no events in database
-                    console.warn('No events found in Supabase, using fallback events');
                     setEvents(FALLBACK_EVENTS);
                 }
             } catch (error) {
-                console.error('Error loading events:', error);
-                // Use fallback events on error
+                console.error("Error loading events:", error);
                 setEvents(FALLBACK_EVENTS);
             } finally {
                 setEventsLoading(false);
             }
         };
-
         loadEvents();
     }, []);
 
-    const [formData, setFormData] = useState({
-        name: '',
-        enrollment: '',
-        branch: '',
-        year: '',
-        email: '',
-        phone: '',
-        transactionId: ''
-    });
+    // Load enrolled events + statuses
+    useEffect(() => {
+        const loadEnrolledEvents = async () => {
+            if (!user) {
+                setEnrolledEventIds(new Set());
+                setEventRegistrationStatus(new Map());
+                return;
+            }
+
+            setEnrolledLoading(true);
+            try {
+                let registrations = [];
+                if (typeof registrationsService.getByUser === "function") {
+                    registrations = await registrationsService.getByUser(user.id);
+                } else if (typeof registrationsService.getByUserId === "function") {
+                    registrations = await registrationsService.getByUserId(user.id);
+                } else if (typeof registrationsService.getUserRegistrations === "function") {
+                    registrations = await registrationsService.getUserRegistrations(user.id);
+                } else if (typeof registrationsService.getAll === "function") {
+                    const all = await registrationsService.getAll();
+                    registrations = all?.filter((reg) => String(reg.user_id) === String(user.id)) || [];
+                }
+
+                if (registrations && Array.isArray(registrations)) {
+                    const enrolledIds = new Set(registrations.map((reg) => String(reg.event_id)));
+                    const statusMap = new Map(
+                        registrations.map((reg) => [String(reg.event_id), (reg.status || "").toLowerCase()])
+                    );
+                    setEnrolledEventIds(enrolledIds);
+                    setEventRegistrationStatus(statusMap);
+                }
+            } catch (error) {
+                console.error("Error loading enrolled events:", error);
+                setEnrolledEventIds(new Set());
+                setEventRegistrationStatus(new Map());
+            } finally {
+                setEnrolledLoading(false);
+            }
+        };
+
+        loadEnrolledEvents();
+    }, [user]);
+
+    // Load registration counts per event (no direct supabase client import)
+    useEffect(() => {
+        const loadCounts = async () => {
+            setCountsLoading(true);
+            try {
+                const counts = new Map();
+
+                if (typeof registrationsService.countAllByEvent === "function") {
+                    const rows = await registrationsService.countAllByEvent(); // [{ event_id, count }]
+                    rows?.forEach((r) => counts.set(String(r.event_id), Number(r.count)));
+                } else if (typeof registrationsService.getAll === "function") {
+                    const all = await registrationsService.getAll();
+                    all?.forEach((reg) => {
+                        const k = String(reg.event_id);
+                        counts.set(k, (counts.get(k) || 0) + 1);
+                    });
+                }
+
+                setRegistrationCounts(counts);
+            } catch (e) {
+                console.error("Error loading registration counts:", e);
+                setRegistrationCounts(new Map());
+            } finally {
+                setCountsLoading(false);
+            }
+        };
+
+        loadCounts();
+    }, []);
+
+    const isEnrollmentClosed = (event) => {
+        if (!event) return false;
+        const now = new Date();
+        if (event.enrollment_deadline && new Date(event.enrollment_deadline) < now) return true;
+        if (event.registration_deadline && new Date(event.registration_deadline) < now) return true;
+        if (event.date && new Date(event.date) < now) return true;
+        if (event.is_open === false || event.is_active === false) return true;
+        if (event.status === "closed" || event.status === "completed") return true;
+        return false;
+    };
+
+    const isUserEnrolled = (eventId) => enrolledEventIds.has(String(eventId));
+    const getRegistrationStatus = (eventId) => eventRegistrationStatus.get(String(eventId));
+
+    const isEventFull = (event) => {
+        const cap = event?.spots ?? 50; // use DB value; fallback to 50
+        const count = registrationCounts.get(String(event?.id)) || 0;
+        return cap !== null && count >= cap;
+    };
+
+    const renderEnrollButton = (event) => {
+        const status = getRegistrationStatus(event.id);
+        const enrolled = isUserEnrolled(event.id);
+        const closed = isEnrollmentClosed(event);
+        const full = isEventFull(event);
+        const cap = event?.spots ?? 50;
+        const count = registrationCounts.get(String(event.id)) || 0;
+
+        if ((enrolledLoading || countsLoading) && user) {
+            return (
+                <button disabled className="px-6 py-3 bg-gray-200 text-gray-500 rounded-xl font-semibold flex items-center gap-2">
+                    <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Loading...</span>
+                </button>
+            );
+        }
+
+        if (status === "pending") {
+            return (
+                <div className="inline-flex items-center gap-2 px-6 py-3 bg-amber-100 text-amber-800 rounded-xl shadow-sm font-semibold border border-amber-200">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M12 4a8 8 0 110 16 8 8 0 010-16z" />
+                    </svg>
+                    <span>Verification pending</span>
+                </div>
+            );
+        }
+
+        if (enrolled) {
+            return (
+                <div className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl shadow-lg font-semibold">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Enrolled</span>
+                </div>
+            );
+        }
+
+        if (closed) {
+            return (
+                <button
+                    disabled
+                    className="px-6 py-3 bg-gray-400 text-white rounded-xl cursor-not-allowed shadow-md font-semibold flex items-center gap-2 opacity-75"
+                >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    <span>Closed</span>
+                </button>
+            );
+        }
+
+        if (full) {
+            return (
+                <button
+                    disabled
+                    className="px-6 py-3 bg-gray-400 text-white rounded-xl cursor-not-allowed shadow-md font-semibold flex items-center gap-2 opacity-75"
+                >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    <span>Full ({count}/{cap})</span>
+                </button>
+            );
+        }
+
+        return (
+            <button
+                onClick={() => openEnrollModal(event)}
+                disabled={!event.id}
+                className={`group/btn px-6 py-3 bg-linear-to-r from-[#221F3B] to-[#3a3560] text-white rounded-xl hover:from-[#3a3560] hover:to-[#221F3B] transition-all shadow-lg hover:shadow-xl transform hover:scale-105 font-semibold flex items-center gap-2 ${
+                    !event.id ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+                title={!event.id ? "Events must be loaded from database to enroll" : ""}
+            >
+                <span>{!event.id ? "Loading..." : "Enroll"}</span>
+                {event.id && (
+                    <svg className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                )}
+            </button>
+        );
+    };
 
     const resetForm = () => {
         setFormData({
-            name: '',
-            enrollment: '',
-            branch: '',
-            year: '',
-            email: '',
-            phone: '',
-            transactionId: ''
+            name: "",
+            enrollment: "",
+            branch: "",
+            year: "",
+            email: "",
+            phone: "",
+            transactionId: "",
         });
         setErrors({});
         setSubmitStatus(null);
@@ -80,19 +269,15 @@ function Home() {
 
     const validateForm = () => {
         const newErrors = {};
-
-        if (formData.phone && !/^\d{10}$/.test(formData.phone.replace(/\D/g, ''))) {
-            newErrors.phone = 'Please enter a valid 10-digit phone number';
+        if (formData.phone && !/^\d{10}$/.test(formData.phone.replace(/\D/g, ""))) {
+            newErrors.phone = "Please enter a valid 10-digit phone number";
         }
-
         if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-            newErrors.email = 'Please enter a valid email address';
+            newErrors.email = "Please enter a valid email address";
         }
-
         if (!formData.transactionId || formData.transactionId.trim().length < 10) {
-            newErrors.transactionId = 'Please enter a valid UPI Transaction ID (minimum 10 characters)';
+            newErrors.transactionId = "Please enter a valid UPI Transaction ID (minimum 10 characters)";
         }
-
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -100,50 +285,71 @@ function Home() {
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
-
-        if (errors[name]) {
-            setErrors({ ...errors, [name]: '' });
-        }
+        if (errors[name]) setErrors({ ...errors, [name]: "" });
     };
 
     const openEnrollModal = async (event) => {
-        // Check if user is authenticated
         if (!user) {
             setShowAuthModal(true);
             return;
         }
 
-        // Check if user is already registered
+        const status = getRegistrationStatus(event.id);
+        if (status === "pending") {
+            alert("Your registration is pending verification for this event.");
+            return;
+        }
+
+        if (isUserEnrolled(event.id)) {
+            alert("You are already registered for this event!");
+            return;
+        }
+
+        if (isEnrollmentClosed(event)) {
+            alert("Enrollment for this event is closed.");
+            return;
+        }
+
+        if (isEventFull(event)) {
+            alert("This event is full.");
+            return;
+        }
+
         try {
             const isRegistered = await registrationsService.isRegistered(user.id, event.id);
             if (isRegistered) {
-                alert('You are already registered for this event!');
+                setEnrolledEventIds((prev) => new Set([...prev, String(event.id)]));
+                setEventRegistrationStatus((prev) => {
+                    const next = new Map(prev);
+                    if (!next.has(String(event.id))) next.set(String(event.id), "pending");
+                    return next;
+                });
+                alert("You are already registered for this event!");
                 return;
             }
         } catch (error) {
-            console.error('Error checking registration:', error);
+            console.error("Error checking registration:", error);
         }
 
         setSelectedEvent(event);
         setShowModal(true);
         resetForm();
 
-        // Load user profile to pre-fill form
         if (user) {
             try {
                 const profile = await profilesService.get(user.id);
                 setUserProfile(profile);
-                setFormData(prev => ({
+                setFormData((prev) => ({
                     ...prev,
-                    name: profile?.name || '',
-                    enrollment: profile?.enrollment || '',
-                    branch: profile?.branch || '',
-                    year: profile?.year || '',
-                    email: user.email || '',
-                    phone: profile?.phone || '',
+                    name: profile?.name || "",
+                    enrollment: profile?.enrollment || "",
+                    branch: profile?.branch || "",
+                    year: profile?.year || "",
+                    email: user.email || "",
+                    phone: profile?.phone || "",
                 }));
             } catch (error) {
-                console.error('Error loading profile:', error);
+                console.error("Error loading profile:", error);
             }
         }
     };
@@ -161,8 +367,9 @@ function Home() {
             setShowAuthModal(true);
             return;
         }
-
-        if (!validateForm()) {
+        if (!validateForm()) return;
+        if (isEventFull(selectedEvent)) {
+            setErrors({ submit: "This event is full. No spots left." });
             return;
         }
 
@@ -170,43 +377,42 @@ function Home() {
         setSubmitStatus(null);
 
         try {
-            console.log('Submitting registration...');
-            console.log('Selected Event:', selectedEvent);
-            console.log('User:', user);
-            console.log('Form Data:', formData);
-
-            // Validate event_id - it must be a valid UUID if using Supabase
-            if (!selectedEvent.id) {
-                throw new Error('Invalid event selected. Please refresh the page and try again.');
-            }
-
-            // Check if event_id is a valid UUID format
+            if (!selectedEvent.id) throw new Error("Invalid event selected. Please refresh the page and try again.");
             const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-            if (!uuidRegex.test(selectedEvent.id)) {
-                throw new Error('Invalid event ID format. Events must be loaded from Supabase. Please refresh the page.');
-            }
+            if (!uuidRegex.test(selectedEvent.id)) throw new Error("Invalid event ID format. Please refresh the page.");
 
-            // Create registration in Supabase
             const registrationData = {
                 user_id: user.id,
                 event_id: selectedEvent.id,
                 transaction_id: formData.transactionId,
-                payment_method: 'UPI',
+                payment_method: "UPI",
                 amount_paid: parseFloat(selectedEvent.fee),
                 enrollment_number: formData.enrollment,
                 branch: formData.branch,
                 year: formData.year,
                 phone: formData.phone,
                 email: formData.email || user.email,
-                status: 'pending', // Will be confirmed after payment verification
+                status: "pending",
             };
 
-            console.log('Registration Data:', registrationData);
+            await registrationsService.create(registrationData);
 
-            const registration = await registrationsService.create(registrationData);
-            console.log('Registration created successfully:', registration);
+            // update enrolled set + status map
+            setEnrolledEventIds((prev) => new Set([...prev, String(selectedEvent.id)]));
+            setEventRegistrationStatus((prev) => {
+                const next = new Map(prev);
+                next.set(String(selectedEvent.id), "pending");
+                return next;
+            });
 
-            // Update user profile if needed
+            // bump counts locally
+            setRegistrationCounts((prev) => {
+                const next = new Map(prev);
+                const k = String(selectedEvent.id);
+                next.set(k, (next.get(k) || 0) + 1);
+                return next;
+            });
+
             if (userProfile) {
                 const profileUpdates = {};
                 if (formData.name && formData.name !== userProfile.name) profileUpdates.name = formData.name;
@@ -214,22 +420,15 @@ function Home() {
                 if (formData.branch && formData.branch !== userProfile.branch) profileUpdates.branch = formData.branch;
                 if (formData.year && formData.year !== userProfile.year) profileUpdates.year = formData.year;
                 if (formData.phone && formData.phone !== userProfile.phone) profileUpdates.phone = formData.phone;
-
-                if (Object.keys(profileUpdates).length > 0) {
-                    await profilesService.update(user.id, profileUpdates);
-                }
+                if (Object.keys(profileUpdates).length > 0) await profilesService.update(user.id, profileUpdates);
             }
 
-            console.log('Registration created:', registration);
             setIsSubmitting(false);
-            setSubmitStatus('success');
-
-            setTimeout(() => {
-                closeModal();
-            }, 2000);
+            setSubmitStatus("success");
+            setTimeout(() => closeModal(), 2000);
         } catch (error) {
-            console.error('Error creating registration:', error);
-            console.error('Error details:', {
+            console.error("Error creating registration:", error);
+            console.error("Error details:", {
                 message: error.message,
                 details: error.details,
                 hint: error.hint,
@@ -237,50 +436,40 @@ function Home() {
             });
 
             setIsSubmitting(false);
-            setSubmitStatus('error');
+            setSubmitStatus("error");
 
-            // Better error messages for common issues
-            let errorMessage = 'Failed to submit registration. Please try again.';
-            if (error.message) {
-                errorMessage = error.message;
-            } else if (error.details) {
-                errorMessage = error.details;
-            } else if (error.hint) {
-                errorMessage = error.hint;
+            let errorMessage = "Failed to submit registration. Please try again.";
+            if (error.message) errorMessage = error.message;
+            else if (error.details) errorMessage = error.details;
+            else if (error.hint) errorMessage = error.hint;
+            if (error.code === "23503") errorMessage = "Invalid event. The event may not exist in the database.";
+            else if (error.code === "23505") {
+                errorMessage = "You are already registered for this event!";
+                setEnrolledEventIds((prev) => new Set([...prev, String(selectedEvent.id)]));
+                setEventRegistrationStatus((prev) => {
+                    const next = new Map(prev);
+                    next.set(String(selectedEvent.id), "pending");
+                    return next;
+                });
             }
-
-            // Specific error handling
-            if (error.code === '23503') {
-                errorMessage = 'Invalid event. The event may not exist in the database. Please refresh and try again.';
-            } else if (error.code === '23505') {
-                errorMessage = 'You are already registered for this event!';
-            } else if (error.code === '42501') {
-                errorMessage = 'Permission denied. Please make sure you are logged in and have the necessary permissions.';
-            }
-
             setErrors({ submit: errorMessage });
         }
     };
 
     useEffect(() => {
         const escHandler = (e) => {
-            if (e.key === 'Escape' && !isSubmitting) {
-                closeModal();
-            }
+            if (e.key === "Escape" && !isSubmitting) closeModal();
         };
-
         if (showModal) {
-            document.body.style.overflow = 'hidden';
-            window.addEventListener('keydown', escHandler);
+            document.body.style.overflow = "hidden";
+            window.addEventListener("keydown", escHandler);
         }
-
         return () => {
-            document.body.style.overflow = 'unset';
-            window.removeEventListener('keydown', escHandler);
+            document.body.style.overflow = "unset";
+            window.removeEventListener("keydown", escHandler);
         };
     }, [showModal, isSubmitting]);
 
-    // Show loading state while checking auth
     if (authLoading) {
         return (
             <div className="min-h-screen bg-linear-to-b from-[#1b1833] to-[#0f0c1d] flex items-center justify-center">
@@ -289,30 +478,27 @@ function Home() {
         );
     }
 
+
     return (
         <ClickSpark sparkColor="#FFA500" sparkSize={12}>
             <div className="bg-linear-to-b from-[#1b1833] to-[#0f0c1d] text-white">
                 {/* Auth Modal */}
-                <AuthModal
-                    isOpen={showAuthModal}
-                    onClose={() => setShowAuthModal(false)}
-                    initialMode={authMode}
-                />
+                <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} initialMode={authMode} />
 
                 {/* HERO SECTION */}
-                <section id="hero" className="relative min-h-[70vh] sm:min-h-[80vh] lg:min-h-[90vh] flex flex-col justify-center items-center text-center px-4 sm:px-6 overflow-hidden">
-                    {/* Background Image */}
+                <section
+                    id="hero"
+                    className="relative min-h-[70vh] sm:min-h-[80vh] lg:min-h-[90vh] flex flex-col justify-center items-center text-center px-4 sm:px-6 overflow-hidden"
+                >
                     <div
                         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
                         style={{
-                            backgroundImage: 'url(/hero.jpg)'
+                            backgroundImage: "url(/hero.jpg)",
                         }}
                     >
-                        {/* Dark overlay for text readability */}
                         <div className="absolute inset-0 bg-linear-to-b from-black/70 via-black/60 to-black/70"></div>
                     </div>
 
-                    {/* Animated background elements */}
                     <div className="absolute inset-0 overflow-hidden pointer-events-none">
                         <div className="absolute top-20 left-10 w-72 h-72 bg-orange-500/10 rounded-full blur-3xl animate-pulse"></div>
                         <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
@@ -331,7 +517,7 @@ function Home() {
                             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                                 <button
                                     onClick={() => {
-                                        setAuthMode('signup');
+                                        setAuthMode("signup");
                                         setShowAuthModal(true);
                                     }}
                                     className="group px-8 py-4 bg-linear-to-r from-orange-600 to-orange-700 rounded-xl font-semibold hover:from-orange-700 hover:to-orange-800 transition-all shadow-xl hover:shadow-2xl transform hover:-translate-y-1 flex items-center gap-2 text-lg"
@@ -379,29 +565,33 @@ function Home() {
                         ) : (
                             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
                                 {events.map((event, index) => {
-                                    // Format date for display
-                                    const eventDate = event.date ? new Date(event.date).toLocaleDateString('en-GB', {
-                                        day: 'numeric',
-                                        month: 'short',
-                                        year: 'numeric'
-                                    }) : 'Date TBA';
+                                    const eventDate = event.date
+                                        ? new Date(event.date).toLocaleDateString("en-GB", {
+                                            day: "numeric",
+                                            month: "short",
+                                            year: "numeric",
+                                        })
+                                        : "Date TBA";
+
+                                    const cap = event?.spots ?? 50;
+                                    const count = registrationCounts.get(String(event.id)) || 0;
+                                    const spotsLeft = Math.max(0, cap - count);
 
                                     return (
                                         <div
                                             key={event.id}
                                             className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 p-8 flex flex-col border-2 border-transparent hover:border-orange-200 relative overflow-hidden"
                                         >
-                                            {/* Decorative gradient overlay */}
                                             <div className="absolute top-0 right-0 w-32 h-32 bg-linear-to-br from-orange-500/5 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
                                             <div className="relative z-10">
                                                 <div className="flex items-center justify-between mb-5">
-                                                    <span className="inline-flex items-center gap-2 px-4 py-2 text-sm rounded-full bg-linear-to-r from-orange-100 to-amber-100 text-orange-700 font-semibold border border-orange-200">
-                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                                        </svg>
-                                                        {eventDate}
-                                                    </span>
+                          <span className="inline-flex items-center gap-2 px-4 py-2 text-sm rounded-full bg-linear-to-r from-orange-100 to-amber-100 text-orange-700 font-semibold border border-orange-200">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                              {eventDate}
+                          </span>
                                                     <div className="w-12 h-12 rounded-xl bg-linear-to-br from-orange-500 to-amber-500 flex items-center justify-center text-white font-bold text-lg shadow-lg">
                                                         {index + 1}
                                                     </div>
@@ -411,33 +601,17 @@ function Home() {
                                                     {event.title}
                                                 </h3>
 
-                                                <p className="text-gray-600 mb-6 leading-relaxed min-h-12">
-                                                    {event.description}
-                                                </p>
+                                                <p className="text-gray-600 mb-2 leading-relaxed min-h-12">{event.description}</p>
+                                                <p className="text-xs text-gray-500 mb-4">Limited Spots</p>
 
                                                 <div className="mt-auto pt-6 border-t border-gray-100">
                                                     <div className="flex items-center justify-between">
                                                         <div>
                                                             <span className="text-xs text-gray-500 uppercase tracking-wide">Fee</span>
-                                                            <div className="text-2xl font-bold text-orange-600">
-                                                                ₹{event.fee}
-                                                            </div>
+                                                            <div className="text-2xl font-bold text-orange-600">₹{event.fee}</div>
                                                         </div>
 
-                                                        <button
-                                                            onClick={() => openEnrollModal(event)}
-                                                            disabled={!event.id}
-                                                            className={`group/btn px-6 py-3 bg-linear-to-r from-[#221F3B] to-[#3a3560] text-white rounded-xl hover:from-[#3a3560] hover:to-[#221F3B] transition-all shadow-lg hover:shadow-xl transform hover:scale-105 font-semibold flex items-center gap-2 ${!event.id ? 'opacity-50 cursor-not-allowed' : ''
-                                                                }`}
-                                                            title={!event.id ? 'Events must be loaded from database to enroll' : ''}
-                                                        >
-                                                            <span>{!event.id ? 'Loading...' : 'Enroll'}</span>
-                                                            {event.id && (
-                                                                <svg className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                                                                </svg>
-                                                            )}
-                                                        </button>
+                                                        {renderEnrollButton(event)}
                                                     </div>
                                                 </div>
                                             </div>
@@ -457,7 +631,6 @@ function Home() {
                             <p className="text-xl text-gray-300">Innovative IoT solutions developed by our students</p>
                         </div>
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {/* Project 1 */}
                             <div className="bg-white/5 backdrop-blur-sm rounded-2xl overflow-hidden border border-white/10 hover:border-orange-500/50 transition-all hover:shadow-2xl">
                                 <div className="h-48 overflow-hidden bg-gray-800">
                                     <img
@@ -471,8 +644,6 @@ function Home() {
                                     <p className="text-gray-300 text-sm leading-relaxed">Controlled by hand gestures with applications in health domain.</p>
                                 </div>
                             </div>
-
-                            {/* Project 2 */}
                             <div className="bg-white/5 backdrop-blur-sm rounded-2xl overflow-hidden border border-white/10 hover:border-orange-500/50 transition-all hover:shadow-2xl">
                                 <div className="h-48 overflow-hidden bg-gray-800">
                                     <img
@@ -486,60 +657,36 @@ function Home() {
                                     <p className="text-gray-300 text-sm leading-relaxed">Remote control of home appliances using gesture recognition.</p>
                                 </div>
                             </div>
-
-                            {/* Project 3 */}
                             <div className="bg-white/5 backdrop-blur-sm rounded-2xl overflow-hidden border border-white/10 hover:border-orange-500/50 transition-all hover:shadow-2xl">
                                 <div className="h-48 overflow-hidden bg-gray-800">
-                                    <img
-                                        src="/gallery/gallery-3.jpg"
-                                        alt="Drone Communication"
-                                        className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
-                                    />
+                                    <img src="/gallery/gallery-3.jpg" alt="Drone Communication" className="w-full h-full object-cover hover:scale-110 transition-transform duration-300" />
                                 </div>
                                 <div className="p-6">
                                     <h4 className="text-xl font-bold text-orange-400 mb-2">Drone Communication</h4>
                                     <p className="text-gray-300 text-sm leading-relaxed">Real-time data transmission between drones and ground stations.</p>
                                 </div>
                             </div>
-
-                            {/* Project 4 */}
                             <div className="bg-white/5 backdrop-blur-sm rounded-2xl overflow-hidden border border-white/10 hover:border-orange-500/50 transition-all hover:shadow-2xl">
                                 <div className="h-48 overflow-hidden bg-gray-800">
-                                    <img
-                                        src="/gallery/gallery-9.jpg"
-                                        alt="Home Automation"
-                                        className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
-                                    />
+                                    <img src="/gallery/gallery-9.jpg" alt="Home Automation" className="w-full h-full object-cover hover:scale-110 transition-transform duration-300" />
                                 </div>
                                 <div className="p-6">
                                     <h4 className="text-xl font-bold text-orange-400 mb-2">Home Automation</h4>
                                     <p className="text-gray-300 text-sm leading-relaxed">Automatic electronic control of household features and appliances.</p>
                                 </div>
                             </div>
-
-                            {/* Project 5 */}
                             <div className="bg-white/5 backdrop-blur-sm rounded-2xl overflow-hidden border border-white/10 hover:border-orange-500/50 transition-all hover:shadow-2xl">
                                 <div className="h-48 overflow-hidden bg-gray-800">
-                                    <img
-                                        src="/gallery/gallery-4.jpg"
-                                        alt="Projector Controller"
-                                        className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
-                                    />
+                                    <img src="/gallery/gallery-4.jpg" alt="Projector Controller" className="w-full h-full object-cover hover:scale-110 transition-transform duration-300" />
                                 </div>
                                 <div className="p-6">
                                     <h4 className="text-xl font-bold text-orange-400 mb-2">Projector Controller</h4>
                                     <p className="text-gray-300 text-sm leading-relaxed">Smart projector with remote control capabilities.</p>
                                 </div>
                             </div>
-
-                            {/* Project 6 */}
                             <div className="bg-white/5 backdrop-blur-sm rounded-2xl overflow-hidden border border-white/10 hover:border-orange-500/50 transition-all hover:shadow-2xl">
                                 <div className="h-48 overflow-hidden bg-gray-800">
-                                    <img
-                                        src="/gallery/gallery-10.jpg"
-                                        alt="AC Automation"
-                                        className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
-                                    />
+                                    <img src="/gallery/gallery-10.jpg" alt="AC Automation" className="w-full h-full object-cover hover:scale-110 transition-transform duration-300" />
                                 </div>
                                 <div className="p-6">
                                     <h4 className="text-xl font-bold text-orange-400 mb-2">AC Automation</h4>
@@ -570,11 +717,11 @@ function Home() {
                                 </div>
                             </div>
                             <div className="space-y-6">
-                                {/* About Card */}
                                 <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all border-2 border-transparent hover:border-orange-200">
                                     <h3 className="text-3xl font-bold text-[#221F3B] mb-4">About SCET IoT Club</h3>
                                     <p className="text-gray-600 leading-relaxed mb-6">
-                                        Founded in 2016 under the Computer Engineering Department, the SCET IoT Club empowers students to innovate and solve real-world problems through hands-on hardware projects and cutting-edge IoT technologies.
+                                        Founded in 2016 under the Computer Engineering Department, the SCET IoT Club empowers students to innovate and solve real-world problems through
+                                        hands-on hardware projects and cutting-edge IoT technologies.
                                     </p>
                                     <div className="border-t border-gray-200 pt-6">
                                         <h4 className="text-xl font-bold text-gray-900 mb-4">Our Vision</h4>
@@ -601,7 +748,6 @@ function Home() {
                                     </div>
                                 </div>
                             </div>
-
                         </div>
                     </div>
                 </section>
@@ -660,9 +806,7 @@ function Home() {
                                     </svg>
                                 </div>
                                 <h4 className="text-xl font-bold mb-3 text-gray-900">Workshops & Training</h4>
-                                <p className="text-gray-600 leading-relaxed">
-                                    Hands-on workshops and practical training sessions to enhance IoT skills and gain real-world experience.
-                                </p>
+                                <p className="text-gray-600 leading-relaxed">Hands-on workshops and practical training sessions to enhance IoT skills and gain real-world experience.</p>
                             </div>
                             <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all border-2 border-transparent hover:border-purple-200">
                                 <div className="w-16 h-16 bg-linear-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mb-6">
@@ -671,9 +815,7 @@ function Home() {
                                     </svg>
                                 </div>
                                 <h4 className="text-xl font-bold mb-3 text-gray-900">Robotics & Drones</h4>
-                                <p className="text-gray-600 leading-relaxed">
-                                    Design and development of autonomous robots and drones with advanced embedded systems and GPS integration.
-                                </p>
+                                <p className="text-gray-600 leading-relaxed">Design and development of autonomous robots and drones with advanced embedded systems and GPS integration.</p>
                             </div>
                             <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all border-2 border-transparent hover:border-blue-200">
                                 <div className="w-16 h-16 bg-linear-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center mb-6">
@@ -705,7 +847,8 @@ function Home() {
                                         alt="Prof.(Dr.) Pariza Kamboj"
                                         className="w-24 h-24 sm:w-32 sm:h-32 rounded-xl object-cover border-2 border-orange-500/50"
                                         onError={(e) => {
-                                            e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128"%3E%3Crect width="128" height="128" fill="%23f3f4f6"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="12" fill="%236b7280"%3EPhoto%3C/text%3E%3C/svg%3E';
+                                            e.target.src =
+                                                'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128"%3E%3Crect width="128" height="128" fill="%23f3f4f6"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="12" fill="%236b7280"%3EPhoto%3C/text%3E%3C/svg%3E';
                                         }}
                                     />
                                 </div>
@@ -726,7 +869,8 @@ function Home() {
                                         alt="Prof. Vandana Joshi"
                                         className="w-24 h-24 sm:w-32 sm:h-32 rounded-xl object-cover border-2 border-orange-500/50"
                                         onError={(e) => {
-                                            e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128"%3E%3Crect width="128" height="128" fill="%23f3f4f6"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="12" fill="%236b7280"%3EPhoto%3C/text%3E%3C/svg%3E';
+                                            e.target.src =
+                                                'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128"%3E%3Crect width="128" height="128" fill="%23f3f4f6"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="12" fill="%236b7280"%3EPhoto%3C/text%3E%3C/svg%3E';
                                         }}
                                     />
                                 </div>
@@ -734,8 +878,10 @@ function Home() {
                                     <h4 className="text-xl sm:text-2xl font-bold mb-2 text-orange-400">Prof. Vandana Joshi</h4>
                                     <span className="text-gray-400 mb-3 block text-sm sm:text-base">Assistant Professor</span>
                                     <p className="text-gray-300 text-xs sm:text-sm leading-relaxed">
-                                        Qualification : M.Tech (Computer Science & Engg)<br />
-                                        Designation : Assistant Professor<br />
+                                        Qualification : M.Tech (Computer Science & Engg)
+                                        <br />
+                                        Designation : Assistant Professor
+                                        <br />
                                         Email : vandana.joshi@scet.ac.in
                                     </p>
                                 </div>
@@ -784,7 +930,8 @@ function Home() {
                                     Which type of activities done in the IoT Club ?
                                 </summary>
                                 <p className="mt-4 text-gray-600 leading-relaxed pl-9">
-                                    Various types of workshop will be arranged for the Student, Student can able to do practical experience with the hardware to share the advance technologies by doing the projects in different domains.
+                                    Various types of workshop will be arranged for the Student, Student can able to do practical experience with the hardware to share the advance
+                                    technologies by doing the projects in different domains.
                                 </p>
                             </details>
                             <details className="bg-white rounded-xl p-6 shadow-lg border-2 border-gray-200 hover:border-orange-300 transition-all">
@@ -795,7 +942,8 @@ function Home() {
                                     Various workshops will be arranged for the students ?
                                 </summary>
                                 <p className="mt-4 text-gray-600 leading-relaxed pl-9">
-                                    For the Students the workshop will arranged and the expert talks will also arranged for the students, so they can adapt new technologies and can solve their doubts.
+                                    For the Students the workshop will arranged and the expert talks will also arranged for the students, so they can adapt new technologies and can
+                                    solve their doubts.
                                 </p>
                             </details>
                             <details className="bg-white rounded-xl p-6 shadow-lg border-2 border-gray-200 hover:border-orange-300 transition-all">
@@ -816,10 +964,7 @@ function Home() {
                 {/* ENROLLMENT MODAL */}
                 {showModal && selectedEvent && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
-                        <div
-                            className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
-                            onClick={!isSubmitting ? closeModal : undefined}
-                        ></div>
+                        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={!isSubmitting ? closeModal : undefined}></div>
 
                         <div className="relative bg-white w-full max-w-lg rounded-2xl shadow-2xl p-5 sm:p-8 z-10 max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
                             <button
@@ -837,16 +982,14 @@ function Home() {
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                 </div>
-                                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-                                    {selectedEvent.title}
-                                </h2>
+                                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">{selectedEvent.title}</h2>
                                 <div className="flex items-center justify-center gap-3 mb-3">
-                                    <span className="text-sm text-gray-500 flex items-center gap-1">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                        </svg>
-                                        {selectedEvent.date}
-                                    </span>
+                  <span className="text-sm text-gray-500 flex items-center gap-1">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                      {selectedEvent.date}
+                  </span>
                                 </div>
                                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-orange-50 rounded-full border border-orange-200">
                                     <span className="text-sm text-gray-600">Event Fee:</span>
@@ -854,28 +997,24 @@ function Home() {
                                 </div>
                             </div>
 
-                            {submitStatus === 'success' && (
+                            {submitStatus === "success" && (
                                 <div className="mb-6 p-4 bg-linear-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl shadow-sm">
                                     <div className="flex items-center justify-center gap-2">
                                         <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
                                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                         </svg>
-                                        <p className="text-green-700 font-medium text-center">
-                                            Registration successful! Confirmation email sent to {formData.email}
-                                        </p>
+                                        <p className="text-green-700 font-medium text-center">Registration successful! Confirmation email sent to {formData.email}</p>
                                     </div>
                                 </div>
                             )}
 
-                            {submitStatus === 'error' && (
+                            {submitStatus === "error" && (
                                 <div className="mb-6 p-4 bg-red-50 border-2 border-red-200 rounded-xl shadow-sm">
                                     <div className="flex items-center justify-center gap-2">
                                         <svg className="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
                                             <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                                         </svg>
-                                        <p className="text-red-700 font-medium text-center">
-                                            {errors.submit || 'Failed to submit registration. Please try again.'}
-                                        </p>
+                                        <p className="text-red-700 font-medium text-center">{errors.submit || "Failed to submit registration. Please try again."}</p>
                                     </div>
                                 </div>
                             )}
@@ -968,13 +1107,18 @@ function Home() {
                                         value={formData.email}
                                         onChange={handleChange}
                                         disabled={isSubmitting}
-                                        className={`w-full px-4 py-3 text-base text-gray-900 placeholder-gray-400 bg-white border-2 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all shadow-sm hover:border-gray-300 disabled:bg-gray-50 disabled:cursor-not-allowed ${errors.email ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-200'
-                                            }`}
+                                        className={`w-full px-4 py-3 text-base text-gray-900 placeholder-gray-400 bg-white border-2 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all shadow-sm hover:border-gray-300 disabled:bg-gray-50 disabled:cursor-not-allowed ${
+                                            errors.email ? "border-red-500 focus:ring-red-500 focus:border-red-500" : "border-gray-200"
+                                        }`}
                                     />
                                     {errors.email && (
                                         <p className="text-red-500 text-sm mt-1.5 flex items-center gap-1">
                                             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                                <path
+                                                    fillRule="evenodd"
+                                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                                    clipRule="evenodd"
+                                                />
                                             </svg>
                                             {errors.email}
                                         </p>
@@ -993,13 +1137,18 @@ function Home() {
                                         value={formData.phone}
                                         onChange={handleChange}
                                         disabled={isSubmitting}
-                                        className={`w-full px-4 py-3 text-base text-gray-900 placeholder-gray-400 bg-white border-2 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all shadow-sm hover:border-gray-300 disabled:bg-gray-50 disabled:cursor-not-allowed ${errors.phone ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-200'
-                                            }`}
+                                        className={`w-full px-4 py-3 text-base text-gray-900 placeholder-gray-400 bg-white border-2 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all shadow-sm hover:border-gray-300 disabled:bg-gray-50 disabled:cursor-not-allowed ${
+                                            errors.phone ? "border-red-500 focus:ring-red-500 focus:border-red-500" : "border-gray-200"
+                                        }`}
                                     />
                                     {errors.phone && (
                                         <p className="text-red-500 text-sm mt-1.5 flex items-center gap-1">
                                             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                                <path
+                                                    fillRule="evenodd"
+                                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                                    clipRule="evenodd"
+                                                />
                                             </svg>
                                             {errors.phone}
                                         </p>
@@ -1011,11 +1160,14 @@ function Home() {
                                         <div className="text-center mb-4">
                                             <div className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm mb-3">
                                                 <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={2}
+                                                        d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"
+                                                    />
                                                 </svg>
-                                                <p className="text-sm font-bold text-gray-800">
-                                                    Pay ₹{selectedEvent.fee}
-                                                </p>
+                                                <p className="text-sm font-bold text-gray-800">Pay ₹{selectedEvent.fee}</p>
                                             </div>
                                             <p className="text-xs text-gray-600 mb-4">Scan the QR code to complete payment</p>
                                         </div>
@@ -1028,7 +1180,8 @@ function Home() {
                                                     className="w-52 h-52 sm:w-60 sm:h-60"
                                                     onError={(e) => {
                                                         e.target.onerror = null;
-                                                        e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"%3E%3Crect width="200" height="200" fill="%23f3f4f6"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="14" fill="%23FFA500"%3EUPI QR CODE%3C/text%3E%3C/svg%3E';
+                                                        e.target.src =
+                                                            'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"%3E%3Crect width="200" height="200" fill="%23f3f4f6"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="14" fill="%23FFA500"%3EUPI QR CODE%3C/text%3E%3C/svg%3E';
                                                     }}
                                                 />
                                             </div>
@@ -1046,20 +1199,29 @@ function Home() {
                                                 value={formData.transactionId}
                                                 onChange={handleChange}
                                                 disabled={isSubmitting}
-                                                className={`w-full px-4 py-3 text-base text-gray-900 placeholder-gray-400 bg-white border-2 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all shadow-sm hover:border-gray-300 disabled:bg-gray-50 disabled:cursor-not-allowed ${errors.transactionId ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-200'}
-                                            `}
+                                                className={`w-full px-4 py-3 text-base text-gray-900 placeholder-gray-400 bg-white border-2 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all shadow-sm hover:border-gray-300 disabled:bg-gray-50 disabled:cursor-not-allowed ${
+                                                    errors.transactionId ? "border-red-500 focus:ring-red-500 focus:border-red-500" : "border-gray-200"
+                                                }`}
                                             />
                                             {errors.transactionId && (
                                                 <p className="text-red-500 text-sm mt-1.5 flex items-center gap-1">
                                                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                                        <path
+                                                            fillRule="evenodd"
+                                                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                                            clipRule="evenodd"
+                                                        />
                                                     </svg>
                                                     {errors.transactionId}
                                                 </p>
                                             )}
                                             <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
                                                 <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                                    <path
+                                                        fillRule="evenodd"
+                                                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                                        clipRule="evenodd"
+                                                    />
                                                 </svg>
                                                 After payment, copy the transaction ID from your UPI app
                                             </p>
@@ -1104,17 +1266,13 @@ function Home() {
                     </div>
                 )}
 
-                {/* Video Modal - Full Screen Style */}
+                {/* Video Modal */}
                 {showVideoModal && (
-                    <div
-                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 sm:p-8"
-                        onClick={() => setShowVideoModal(false)}
-                    >
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 sm:p-8" onClick={() => setShowVideoModal(false)}>
                         <div
                             className="relative bg-black rounded-2xl shadow-2xl w-full max-w-[95vw] h-[90vh] max-h-[90vh] overflow-hidden flex flex-col"
                             onClick={(e) => e.stopPropagation()}
                         >
-                            {/* Close Button */}
                             <button
                                 onClick={() => setShowVideoModal(false)}
                                 className="absolute top-4 right-4 z-10 w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white text-xl font-semibold transition-all shadow-lg"
@@ -1122,26 +1280,18 @@ function Home() {
                                 ✕
                             </button>
 
-                            {/* Video Container - Takes full available space */}
                             <div className="relative flex-1 flex items-center justify-center overflow-hidden">
-                                <video
-                                    controls
-                                    autoPlay
-                                    className="max-w-full max-h-full w-auto h-auto object-contain"
-                                    src="/videos/VJ_CO_IOT_Club_v1.1.mp4"
-                                >
+                                <video controls autoPlay className="max-w-full max-h-full w-auto h-auto object-contain" src="/videos/VJ_CO_IOT_Club_v1.1.mp4">
                                     Your browser does not support the video tag.
                                 </video>
                             </div>
 
-                            {/* Video Title */}
                             <div className="p-4 bg-black/80 border-t border-white/10">
                                 <h3 className="text-xl font-bold text-white text-center">IOT Club Introduction Video</h3>
                             </div>
                         </div>
                     </div>
                 )}
-
             </div>
         </ClickSpark>
     );
