@@ -1068,6 +1068,7 @@ function Home() {
                                             <option value="">Select Branch</option>
                                             <option value="CO">Computer</option>
                                             <option value="IT">Information Technology</option>
+                                            <option value="EL">Electrical</option>
                                             <option value="EC">Electronics</option>
                                             <option value="ME">Mechanical</option>
                                             <option value="CL">Civil</option>
