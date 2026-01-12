@@ -1066,11 +1066,14 @@ function Home() {
                                             className="w-full px-4 py-3 text-base text-gray-900 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all shadow-sm hover:border-gray-300 disabled:bg-gray-50 disabled:cursor-not-allowed appearance-none cursor-pointer"
                                         >
                                             <option value="">Select Branch</option>
-                                            <option value="CSE">Computer Science</option>
+                                            <option value="CO">Computer</option>
                                             <option value="IT">Information Technology</option>
-                                            <option value="ECE">Electronics</option>
+                                            <option value="EC">Electronics</option>
                                             <option value="ME">Mechanical</option>
-                                            <option value="CE">Civil</option>
+                                            <option value="CL">Civil</option>
+                                            <option value="MCA">MCA</option>
+                                            <option value="IC">Instrumentation and Control</option>
+                                            <option value="CH">Chemical</option>
                                         </select>
                                     </div>
 
