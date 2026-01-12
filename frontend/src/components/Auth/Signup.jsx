@@ -121,11 +121,15 @@ function Signup({onSwitchToLogin }) {
                 className="w-full px-4 py-3 text-base text-gray-900 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all disabled:bg-gray-50"
               >
                 <option value="">Select</option>
-                <option value="CSE">CSE</option>
+                <option value="CO">CO</option>
                 <option value="IT">IT</option>
-                <option value="ECE">ECE</option>
+                <option value="EC">EC</option>
                 <option value="ME">ME</option>
-                <option value="CE">CE</option>
+                <option value="CL">CL</option>
+                <option value="AIDS">AIDS</option>
+                <option value="IC">IC</option>
+                <option value="CH">CH</option>
+                <option value="EL">EL</option>
               </select>
             </div>
 
