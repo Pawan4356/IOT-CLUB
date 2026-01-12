@@ -1074,6 +1074,7 @@ function Home() {
                                             <option value="MCA">MCA</option>
                                             <option value="IC">Instrumentation and Control</option>
                                             <option value="CH">Chemical</option>
+                                            <option value="AI">Artificial intelligence and Data science</option>
                                         </select>
                                     </div>
 
