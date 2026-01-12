@@ -123,7 +123,7 @@ function Contact() {
                   <h3 className="text-xl font-bold text-gray-900 mb-2">Phone</h3>
                   <p className="text-gray-600">
                     <a href="tel:+919930927827" className="text-orange-600 hover:text-orange-700 font-medium">
-                      +91 9930927827
+                      +91 6351338712
                     </a>
                   </p>
                 </div>

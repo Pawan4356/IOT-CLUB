@@ -62,7 +62,14 @@ function Signup({onSwitchToLogin }) {
 
   return (
     <div className="w-full max-w-md mx-auto">
-      <div className="bg-white rounded-2xl shadow-2xl p-8">
+      <div 
+        className="bg-white rounded-2xl shadow-2xl p-8 max-h-[75vh] overflow-y-auto"
+        style={{
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+          WebkitOverflowScrolling: 'touch'
+        }}
+      >
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-gray-900 mb-2">Create Account</h2>
           <p className="text-gray-600">Join the IOT Club community</p>
@@ -205,7 +212,7 @@ function Signup({onSwitchToLogin }) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full px-6 py-3.5 text-base font-semibold bg-gradient-to-r from-orange-600 to-orange-700 text-white rounded-xl hover:from-orange-700 hover:to-orange-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:transform-none"
+            className="w-full px-6 py-3.5 text-base font-semibold bg-linear-to-r from-orange-600 to-orange-700 text-white rounded-xl hover:from-orange-700 hover:to-orange-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:transform-none"
           >
             {loading ? 'Creating account...' : 'Sign Up'}
           </button>
