@@ -8,8 +8,10 @@ function ChangePassword({ onClose }) {
     const [success, setSuccess] = useState(false);
     const [loading, setLoading] = useState(false);
 
+    const isFormValid = password.length >= 6 && confirmPassword.length >= 6;
+
     const handleSubmit = async (e) => {
-        e.preventDefault();
+        e. preventDefault();
         setError('');
 
         if (password !== confirmPassword) {
@@ -26,7 +28,7 @@ function ChangePassword({ onClose }) {
 
         try {
             const { error } = await supabase.auth.updateUser({
-                password: password
+                password:  password
             });
 
             if (error) throw error;
@@ -77,10 +79,10 @@ function ChangePassword({ onClose }) {
                     <input
                         type="password"
                         value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        onChange={(e) => setPassword(e.target. value)}
                         required
                         disabled={loading}
-                        className="w-full px-4 py-3 text-base text-gray-900 placeholder-gray-400 bg-white border-2 border-gray-200 rounded-xl focus: ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all disabled: bg-gray-50"
+                        className="w-full px-4 py-3 text-base text-gray-900 placeholder-gray-400 bg-white border-2 border-gray-200 rounded-xl focus: ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all disabled:bg-gray-50"
                         placeholder="At least 6 characters"
                     />
                 </div>
@@ -95,17 +97,21 @@ function ChangePassword({ onClose }) {
                         onChange={(e) => setConfirmPassword(e. target.value)}
                         required
                         disabled={loading}
-                        className="w-full px-4 py-3 text-base text-gray-900 placeholder-gray-400 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus: border-orange-500 transition-all disabled:bg-gray-50"
+                        className="w-full px-4 py-3 text-base text-gray-900 placeholder-gray-400 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus: ring-orange-500 focus:border-orange-500 transition-all disabled:bg-gray-50"
                         placeholder="Re-enter your password"
                     />
                 </div>
 
                 <button
                     type="submit"
-                    disabled={loading}
-                    className="w-full px-6 py-3.5 text-base font-semibold bg-gradient-to-r from-orange-600 to-orange-700 text-white rounded-xl hover:from-orange-700 hover:to-orange-800 transition-all disabled: opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:transform-none"
+                    disabled={loading || !isFormValid}
+                    className={`w-full px-6 py-3.5 text-base font-semibold text-white rounded-xl transition-all shadow-lg transform disabled:transform-none ${
+                        isFormValid && ! loading
+                            ? 'bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 hover:shadow-xl hover:-translate-y-0.5 cursor-pointer'
+                            : 'bg-orange-300 cursor-not-allowed'
+                    }`}
                 >
-                    {loading ? 'Changing.. .' : 'Change Password'}
+                    {loading ?  'Changing.. .' : 'Change Password'}
                 </button>
             </form>
         </div>
