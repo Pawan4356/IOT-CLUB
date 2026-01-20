@@ -499,7 +499,7 @@ function Home() {
                     <div
                         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
                         style={{
-                            backgroundImage: "url(/hero. jpg)",
+                            backgroundImage: "url(/hero.jpg)",
                         }}
                     >
                         <div className="absolute inset-0 bg-linear-to-b from-black/70 via-black/60 to-black/70"></div>
