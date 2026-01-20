@@ -7,8 +7,8 @@ import AuthModal from "../Auth/AuthModal.jsx";
 const FALLBACK_EVENTS = [
     {
         id: null,
-        title: "ERROR!!",
-        description: "Database connection error...",
+        title: "ERROR!! ",
+        description: "Database connection error.. .",
         date: "2025-01-15",
         fee: null,
         status: "Loading...",
@@ -17,7 +17,7 @@ const FALLBACK_EVENTS = [
 ];
 
 function Home() {
-    const { user, loading: authLoading } = useAuth();
+    const { user, loading:  authLoading } = useAuth();
 
     const [events, setEvents] = useState([]);
     const [eventsLoading, setEventsLoading] = useState(true);
@@ -42,12 +42,13 @@ function Home() {
 
     const [formData, setFormData] = useState({
         name: "",
-        enrollment: "",
+        enrollment:  "",
         branch: "",
         year: "",
         email: "",
         phone: "",
         transactionId: "",
+        bringLaptop: "",
     });
 
     // Load events
@@ -74,7 +75,7 @@ function Home() {
     // Load enrolled events + statuses
     useEffect(() => {
         const loadEnrolledEvents = async () => {
-            if (!user) {
+            if (! user) {
                 setEnrolledEventIds(new Set());
                 setEventRegistrationStatus(new Map());
                 return;
@@ -88,10 +89,10 @@ function Home() {
                 } else if (typeof registrationsService.getByUserId === "function") {
                     registrations = await registrationsService.getByUserId(user.id);
                 } else if (typeof registrationsService.getUserRegistrations === "function") {
-                    registrations = await registrationsService.getUserRegistrations(user.id);
+                    registrations = await registrationsService.getUserRegistrations(user. id);
                 } else if (typeof registrationsService.getAll === "function") {
                     const all = await registrationsService.getAll();
-                    registrations = all?.filter((reg) => String(reg.user_id) === String(user.id)) || [];
+                    registrations = all?. filter((reg) => String(reg.user_id) === String(user.id)) || [];
                 }
 
                 if (registrations && Array.isArray(registrations)) {
@@ -123,7 +124,7 @@ function Home() {
 
                 if (typeof registrationsService.countAllByEvent === "function") {
                     const rows = await registrationsService.countAllByEvent(); // [{ event_id, count }]
-                    rows?.forEach((r) => counts.set(String(r.event_id), Number(r.count)));
+                    rows?. forEach((r) => counts.set(String(r.event_id), Number(r.count)));
                 } else if (typeof registrationsService.getAll === "function") {
                     const all = await registrationsService.getAll();
                     all?.forEach((reg) => {
@@ -145,10 +146,10 @@ function Home() {
     }, []);
 
     const isEnrollmentClosed = (event) => {
-        if (!event) return false;
+        if (! event) return false;
         const now = new Date();
         if (event.enrollment_deadline && new Date(event.enrollment_deadline) < now) return true;
-        if (event.registration_deadline && new Date(event.registration_deadline) < now) return true;
+        if (event.registration_deadline && new Date(event. registration_deadline) < now) return true;
         if (event.date && new Date(event.date) < now) return true;
         if (event.is_open === false || event.is_active === false) return true;
         if (event.status === "closed" || event.status === "completed") return true;
@@ -159,18 +160,18 @@ function Home() {
     const getRegistrationStatus = (eventId) => eventRegistrationStatus.get(String(eventId));
 
     const isEventFull = (event) => {
-        const cap = event?.spots ?? 50; // use DB value; fallback to 50
+        const cap = event?. spots ??  50; // use DB value; fallback to 50
         const count = registrationCounts.get(String(event?.id)) || 0;
         return cap !== null && count >= cap;
     };
 
     const renderEnrollButton = (event) => {
-        const status = getRegistrationStatus(event.id);
+        const status = getRegistrationStatus(event. id);
         const enrolled = isUserEnrolled(event.id);
         const closed = isEnrollmentClosed(event);
         const full = isEventFull(event);
         const cap = event?.spots ?? 50;
-        const count = registrationCounts.get(String(event.id)) || 0;
+        const count = registrationCounts.get(String(event. id)) || 0;
 
         if ((enrolledLoading || countsLoading) && user) {
             return (
@@ -237,13 +238,13 @@ function Home() {
         return (
             <button
                 onClick={() => openEnrollModal(event)}
-                disabled={!event.id}
-                className={`group/btn px-6 py-3 bg-linear-to-r from-[#221F3B] to-[#3a3560] text-white rounded-xl hover:from-[#3a3560] hover:to-[#221F3B] transition-all shadow-lg hover:shadow-xl transform hover:scale-105 font-semibold flex items-center gap-2 ${
-                    !event.id ? "opacity-50 cursor-not-allowed" : ""
+                disabled={! event. id}
+                className={`group/btn px-6 py-3 bg-linear-to-r from-[#221F3B] to-[#3a3560] text-white rounded-xl hover:from-[#3a3560] hover:to-[#221F3B] transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-semibold flex items-center gap-2 ${
+                    ! event.id ?  "opacity-50 cursor-not-allowed" : ""
                 }`}
                 title={!event.id ? "Events must be loaded from database to enroll" : ""}
             >
-                <span>{!event.id ? "Loading..." : "Enroll"}</span>
+                <span>{! event.id ? "Loading..." : "Enroll"}</span>
                 {event.id && (
                     <svg className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -260,8 +261,9 @@ function Home() {
             branch: "",
             year: "",
             email: "",
-            phone: "",
+            phone:  "",
             transactionId: "",
+            bringLaptop:  "",
         });
         setErrors({});
         setSubmitStatus(null);
@@ -269,14 +271,17 @@ function Home() {
 
     const validateForm = () => {
         const newErrors = {};
-        if (formData.phone && !/^\d{10}$/.test(formData.phone.replace(/\D/g, ""))) {
+        if (formData.phone && !/^\d{10}$/.test(formData.phone. replace(/\D/g, ""))) {
             newErrors.phone = "Please enter a valid 10-digit phone number";
         }
-        if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+        if (formData. email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
             newErrors.email = "Please enter a valid email address";
         }
-        if (!formData.transactionId || formData.transactionId.trim().length < 10) {
+        if (! formData.transactionId || formData.transactionId.trim().length < 10) {
             newErrors.transactionId = "Please enter a valid UPI Transaction ID (minimum 10 characters)";
+        }
+        if (! formData.bringLaptop) {
+            newErrors.bringLaptop = "Please select whether you will bring a laptop";
         }
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -285,7 +290,7 @@ function Home() {
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
-        if (errors[name]) setErrors({ ...errors, [name]: "" });
+        if (errors[name]) setErrors({ ...errors, [name]:  "" });
     };
 
     const openEnrollModal = async (event) => {
@@ -294,7 +299,7 @@ function Home() {
             return;
         }
 
-        const status = getRegistrationStatus(event.id);
+        const status = getRegistrationStatus(event. id);
         if (status === "pending") {
             alert("Your registration is pending verification for this event.");
             return;
@@ -316,12 +321,12 @@ function Home() {
         }
 
         try {
-            const isRegistered = await registrationsService.isRegistered(user.id, event.id);
+            const isRegistered = await registrationsService. isRegistered(user.id, event.id);
             if (isRegistered) {
                 setEnrolledEventIds((prev) => new Set([...prev, String(event.id)]));
                 setEventRegistrationStatus((prev) => {
                     const next = new Map(prev);
-                    if (!next.has(String(event.id))) next.set(String(event.id), "pending");
+                    if (! next.has(String(event.id))) next.set(String(event.id), "pending");
                     return next;
                 });
                 alert("You are already registered for this event!");
@@ -340,8 +345,8 @@ function Home() {
                 const profile = await profilesService.get(user.id);
                 setUserProfile(profile);
                 setFormData((prev) => ({
-                    ...prev,
-                    name: profile?.name || "",
+                    ... prev,
+                    name: profile?. name || "",
                     enrollment: profile?.enrollment || "",
                     branch: profile?.branch || "",
                     year: profile?.year || "",
@@ -367,9 +372,9 @@ function Home() {
             setShowAuthModal(true);
             return;
         }
-        if (!validateForm()) return;
+        if (! validateForm()) return;
         if (isEventFull(selectedEvent)) {
-            setErrors({ submit: "This event is full. No spots left." });
+            setErrors({ submit: "This event is full.  No spots left." });
             return;
         }
 
@@ -377,22 +382,23 @@ function Home() {
         setSubmitStatus(null);
 
         try {
-            if (!selectedEvent.id) throw new Error("Invalid event selected. Please refresh the page and try again.");
+            if (! selectedEvent.id) throw new Error("Invalid event selected.  Please refresh the page and try again.");
             const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-            if (!uuidRegex.test(selectedEvent.id)) throw new Error("Invalid event ID format. Please refresh the page.");
+            if (!uuidRegex.test(selectedEvent.id)) throw new Error("Invalid event ID format.  Please refresh the page.");
 
             const registrationData = {
                 user_id: user.id,
-                event_id: selectedEvent.id,
+                event_id: selectedEvent. id,
                 transaction_id: formData.transactionId,
                 payment_method: "UPI",
                 amount_paid: parseFloat(selectedEvent.fee),
                 enrollment_number: formData.enrollment,
                 branch: formData.branch,
-                year: formData.year,
+                year: formData. year,
                 phone: formData.phone,
                 email: formData.email || user.email,
                 status: "pending",
+                bring_laptop: formData.bringLaptop,
             };
 
             await registrationsService.create(registrationData);
@@ -401,7 +407,7 @@ function Home() {
             setEnrolledEventIds((prev) => new Set([...prev, String(selectedEvent.id)]));
             setEventRegistrationStatus((prev) => {
                 const next = new Map(prev);
-                next.set(String(selectedEvent.id), "pending");
+                next.set(String(selectedEvent. id), "pending");
                 return next;
             });
 
@@ -415,12 +421,12 @@ function Home() {
 
             if (userProfile) {
                 const profileUpdates = {};
-                if (formData.name && formData.name !== userProfile.name) profileUpdates.name = formData.name;
+                if (formData.name && formData.name !== userProfile. name) profileUpdates.name = formData. name;
                 if (formData.enrollment && formData.enrollment !== userProfile.enrollment) profileUpdates.enrollment = formData.enrollment;
                 if (formData.branch && formData.branch !== userProfile.branch) profileUpdates.branch = formData.branch;
-                if (formData.year && formData.year !== userProfile.year) profileUpdates.year = formData.year;
+                if (formData.year && formData. year !== userProfile.year) profileUpdates.year = formData. year;
                 if (formData.phone && formData.phone !== userProfile.phone) profileUpdates.phone = formData.phone;
-                if (Object.keys(profileUpdates).length > 0) await profilesService.update(user.id, profileUpdates);
+                if (Object.keys(profileUpdates).length > 0) await profilesService.update(user. id, profileUpdates);
             }
 
             setIsSubmitting(false);
@@ -442,7 +448,7 @@ function Home() {
             if (error.message) errorMessage = error.message;
             else if (error.details) errorMessage = error.details;
             else if (error.hint) errorMessage = error.hint;
-            if (error.code === "23503") errorMessage = "Invalid event. The event may not exist in the database.";
+            if (error.code === "23503") errorMessage = "Invalid event.  The event may not exist in the database.";
             else if (error.code === "23505") {
                 errorMessage = "You are already registered for this event!";
                 setEnrolledEventIds((prev) => new Set([...prev, String(selectedEvent.id)]));
@@ -458,7 +464,7 @@ function Home() {
 
     useEffect(() => {
         const escHandler = (e) => {
-            if (e.key === "Escape" && !isSubmitting) closeModal();
+            if (e.key === "Escape" && ! isSubmitting) closeModal();
         };
         if (showModal) {
             document.body.style.overflow = "hidden";
@@ -493,7 +499,7 @@ function Home() {
                     <div
                         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
                         style={{
-                            backgroundImage: "url(/hero.jpg)",
+                            backgroundImage: "url(/hero. jpg)",
                         }}
                     >
                         <div className="absolute inset-0 bg-linear-to-b from-black/70 via-black/60 to-black/70"></div>
@@ -509,21 +515,21 @@ function Home() {
                             Welcome to the SCET IoT Club
                         </h1>
 
-                        <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold mb-6 sm:mb-8 lg:mb-12 text-gray-300">
+                        <h2 className="text-xl sm:text-2xl md: text-3xl lg:text-4xl font-semibold mb-6 sm: mb-8 lg:mb-12 text-gray-300">
                             For the Students, by the Students
                         </h2>
 
-                        {!user && (
+                        {! user && (
                             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                                 <button
                                     onClick={() => {
                                         setAuthMode("signup");
                                         setShowAuthModal(true);
                                     }}
-                                    className="group px-8 py-4 bg-linear-to-r from-orange-600 to-orange-700 rounded-xl font-semibold hover:from-orange-700 hover:to-orange-800 transition-all shadow-xl hover:shadow-2xl transform hover:-translate-y-1 flex items-center gap-2 text-lg"
+                                    className="group px-8 py-4 bg-linear-to-r from-orange-600 to-orange-700 rounded-xl font-semibold hover:from-orange-700 hover:to-orange-800 transition-all shadow-xl hover:shadow-2xl transform hover:-translate-y-1 flex items-center gap-2"
                                 >
                                     <span>Get Started</span>
-                                    <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg className="w-5 h-5 group-hover: translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                                     </svg>
                                 </button>
@@ -553,7 +559,7 @@ function Home() {
                             </p>
                         </div>
 
-                        {eventsLoading ? (
+                        {eventsLoading ?  (
                             <div className="text-center py-12">
                                 <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
                                 <p className="mt-4 text-gray-600">Loading events...</p>
@@ -573,16 +579,16 @@ function Home() {
                                         })
                                         : "Date TBA";
 
-                                    const cap = event?.spots ?? 50;
-                                    const count = registrationCounts.get(String(event.id)) || 0;
+                                    const cap = event?. spots ??  50;
+                                    const count = registrationCounts.get(String(event. id)) || 0;
                                     const spotsLeft = Math.max(0, cap - count);
 
                                     return (
                                         <div
                                             key={event.id}
-                                            className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 p-8 flex flex-col border-2 border-transparent hover:border-orange-200 relative overflow-hidden"
+                                            className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 p-8 flex flex-col border-2 border-gray-100 hover:border-orange-200 relative overflow-hidden"
                                         >
-                                            <div className="absolute top-0 right-0 w-32 h-32 bg-linear-to-br from-orange-500/5 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                            <div className="absolute top-0 right-0 w-32 h-32 bg-linear-to-br from-orange-500/5 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
                                             <div className="relative z-10">
                                                 <div className="flex items-center justify-between mb-5">
@@ -592,7 +598,7 @@ function Home() {
                             </svg>
                               {eventDate}
                           </span>
-                                                    <div className="w-12 h-12 rounded-xl bg-linear-to-br from-orange-500 to-amber-500 flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                                                    <div className="w-12 h-12 rounded-xl bg-linear-to-br from-orange-500 to-amber-500 flex items-center justify-center text-white font-bold text-lg shadow-md">
                                                         {index + 1}
                                                     </div>
                                                 </div>
@@ -641,10 +647,10 @@ function Home() {
                                 </div>
                                 <div className="p-6">
                                     <h4 className="text-xl font-bold text-orange-400 mb-2">Gesture Based Car</h4>
-                                    <p className="text-gray-300 text-sm leading-relaxed">Controlled by hand gestures with applications in health domain.</p>
+                                    <p className="text-gray-300 text-sm leading-relaxed">Controlled by hand gestures with applications in health domain. </p>
                                 </div>
                             </div>
-                            <div className="bg-white/5 backdrop-blur-sm rounded-2xl overflow-hidden border border-white/10 hover:border-orange-500/50 transition-all hover:shadow-2xl">
+                            <div className="bg-white/5 backdrop-blur-sm rounded-2xl overflow-hidden border border-white/10 hover: border-orange-500/50 transition-all hover:shadow-2xl">
                                 <div className="h-48 overflow-hidden bg-gray-800">
                                     <img
                                         src="/gallery/gallery-8.jpg"
@@ -755,7 +761,7 @@ function Home() {
                 {/* STATS SECTION */}
                 <section id="counts" className="py-12 sm:py-16 lg:py-24 px-4 sm:px-6 bg-linear-to-b from-[#1b1833] to-[#0f0c1d] text-white">
                     <div className="max-w-7xl mx-auto">
-                        <div className="text-center mb-8 sm:mb-12 lg:mb-16">
+                        <div className="text-center mb-8 sm: mb-12 lg:mb-16">
                             <h2 className="text-4xl sm:text-5xl font-bold mb-4">By The Numbers</h2>
                             <p className="text-xl text-gray-300">Our journey since inception</p>
                         </div>
@@ -772,7 +778,7 @@ function Home() {
                             <div className="bg-linear-to-br from-blue-50 to-cyan-50 rounded-2xl p-8 text-center border-2 border-blue-200 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">
                                 <div className="w-16 h-16 bg-linear-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg">
                                     <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5. 002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                                     </svg>
                                 </div>
                                 <div className="text-5xl font-bold text-blue-600 mb-2">400+</div>
@@ -781,7 +787,7 @@ function Home() {
                             <div className="bg-linear-to-br from-green-50 to-emerald-50 rounded-2xl p-8 text-center border-2 border-green-200 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">
                                 <div className="w-16 h-16 bg-linear-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg">
                                     <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7. 835 4. 697a3. 42 3.42 0 001.946-. 806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00. 806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-. 806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-. 806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00. 806-1.946 3.42 3.42 0 013.138-3.138z" />
                                     </svg>
                                 </div>
                                 <div className="text-5xl font-bold text-green-600 mb-2">50+</div>
@@ -799,10 +805,10 @@ function Home() {
                             <p className="text-xl text-gray-600">Core Activities by SCET IoT Club</p>
                         </div>
                         <div className="grid md:grid-cols-3 gap-8">
-                            <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all border-2 border-transparent hover:border-orange-200">
+                            <div className="bg-white rounded-2xl p-8 shadow-lg hover: shadow-2xl transition-all border-2 border-transparent hover:border-orange-200">
                                 <div className="w-16 h-16 bg-linear-to-br from-orange-500 to-amber-500 rounded-xl flex items-center justify-center mb-6">
                                     <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6. 253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                                     </svg>
                                 </div>
                                 <h4 className="text-xl font-bold mb-3 text-gray-900">Workshops & Training</h4>
@@ -817,10 +823,10 @@ function Home() {
                                 <h4 className="text-xl font-bold mb-3 text-gray-900">Robotics & Drones</h4>
                                 <p className="text-gray-600 leading-relaxed">Design and development of autonomous robots and drones with advanced embedded systems and GPS integration.</p>
                             </div>
-                            <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all border-2 border-transparent hover:border-blue-200">
+                            <div className="bg-white rounded-2xl p-8 shadow-lg hover: shadow-2xl transition-all border-2 border-transparent hover: border-blue-200">
                                 <div className="w-16 h-16 bg-linear-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center mb-6">
                                     <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9. 663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-. 707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                                     </svg>
                                 </div>
                                 <h4 className="text-xl font-bold mb-3 text-gray-900">AI & Cloud Computing</h4>
@@ -840,7 +846,7 @@ function Home() {
                             <p className="text-xl text-gray-300">In a Guidance under the best faculty and having a expertise in IoT</p>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto">
-                            <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-5 sm:p-8 border border-white/10 flex flex-col sm:flex-row gap-4 sm:gap-6 items-center sm:items-start text-center sm:text-left">
+                            <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-5 sm:p-8 border border-white/10 flex flex-col sm:flex-row gap-4 sm:gap-6 items-center sm:items-start text-center sm:text-left hover:bg-white/10 transition-all">
                                 <div className="shrink-0">
                                     <img
                                         src="/teammembers/parizakamboj.jpg"
@@ -848,7 +854,7 @@ function Home() {
                                         className="w-24 h-24 sm:w-32 sm:h-32 rounded-xl object-cover border-2 border-orange-500/50"
                                         onError={(e) => {
                                             e.target.src =
-                                                'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128"%3E%3Crect width="128" height="128" fill="%23f3f4f6"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="12" fill="%236b7280"%3EPhoto%3C/text%3E%3C/svg%3E';
+                                                'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128"%3E%3Crect width="128" height="128" fill="%23ddd"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="48" fill="%23999"%3EPK%3C/text%3E%3C/svg%3E';
                                         }}
                                     />
                                 </div>
@@ -856,29 +862,29 @@ function Home() {
                                     <h4 className="text-xl sm:text-2xl font-bold mb-2 text-orange-400">Prof. (Dr.) Pariza Kamboj</h4>
                                     <span className="text-gray-400 mb-3 block text-sm sm:text-base">Professor</span>
                                     <p className="text-gray-300 text-xs sm:text-sm leading-relaxed">
-                                        Qualification : Ph.D. (Comp. Engg.)<br />
+                                        Qualification :  Ph.D. (Comp. Engg. )<br />
                                         Designation : Professor<br />
                                         Email : pariza.kamboj@scet.ac.in
                                     </p>
                                 </div>
                             </div>
-                            <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-5 sm:p-8 border border-white/10 flex flex-col sm:flex-row gap-4 sm:gap-6 items-center sm:items-start text-center sm:text-left">
+                            <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-5 sm:p-8 border border-white/10 flex flex-col sm:flex-row gap-4 sm:gap-6 items-center sm:items-start text-center sm:text-left hover:bg-white/10 transition-all">
                                 <div className="shrink-0">
                                     <img
                                         src="/teammembers/vandanajoshi.jpg"
-                                        alt="Prof. Vandana Joshi"
+                                        alt="Prof.  Vandana Joshi"
                                         className="w-24 h-24 sm:w-32 sm:h-32 rounded-xl object-cover border-2 border-orange-500/50"
                                         onError={(e) => {
                                             e.target.src =
-                                                'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128"%3E%3Crect width="128" height="128" fill="%23f3f4f6"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="12" fill="%236b7280"%3EPhoto%3C/text%3E%3C/svg%3E';
+                                                'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128"%3E%3Crect width="128" height="128" fill="%23ddd"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="48" fill="%23999"%3EVJ%3C/text%3E%3C/svg%3E';
                                         }}
                                     />
                                 </div>
                                 <div className="flex-1">
                                     <h4 className="text-xl sm:text-2xl font-bold mb-2 text-orange-400">Prof. Vandana Joshi</h4>
-                                    <span className="text-gray-400 mb-3 block text-sm sm:text-base">Assistant Professor</span>
+                                    <span className="text-gray-400 mb-3 block text-sm sm: text-base">Assistant Professor</span>
                                     <p className="text-gray-300 text-xs sm:text-sm leading-relaxed">
-                                        Qualification : M.Tech (Computer Science & Engg)
+                                        Qualification : M. Tech (Computer Science & Engg)
                                         <br />
                                         Designation : Assistant Professor
                                         <br />
@@ -903,35 +909,12 @@ function Home() {
                             <details className="bg-white rounded-xl p-6 shadow-lg border-2 border-gray-200 hover:border-orange-300 transition-all">
                                 <summary className="font-bold text-lg text-gray-900 cursor-pointer flex items-center gap-3">
                                     <svg className="w-6 h-6 text-orange-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8. 228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-. 542. 104-.994. 54-. 994 1.093m0 3h. 01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                     Why to join the SCET IoT Club ?
                                 </summary>
                                 <p className="mt-4 text-gray-600 leading-relaxed pl-9">
                                     The students can able to build the new things and brings up the solutions with new ideas in the daily life challenges.
-                                </p>
-                            </details>
-                            <details className="bg-white rounded-xl p-6 shadow-lg border-2 border-gray-200 hover:border-orange-300 transition-all">
-                                <summary className="font-bold text-lg text-gray-900 cursor-pointer flex items-center gap-3">
-                                    <svg className="w-6 h-6 text-orange-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    Which type of projects are there in IoT Club ?
-                                </summary>
-                                <p className="mt-4 text-gray-600 leading-relaxed pl-9">
-                                    The students can able to learn the new hardware technologies by creating projects and try to solve the daily life solution.
-                                </p>
-                            </details>
-                            <details className="bg-white rounded-xl p-6 shadow-lg border-2 border-gray-200 hover:border-orange-300 transition-all">
-                                <summary className="font-bold text-lg text-gray-900 cursor-pointer flex items-center gap-3">
-                                    <svg className="w-6 h-6 text-orange-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    Which type of activities done in the IoT Club ?
-                                </summary>
-                                <p className="mt-4 text-gray-600 leading-relaxed pl-9">
-                                    Various types of workshop will be arranged for the Student, Student can able to do practical experience with the hardware to share the advance
-                                    technologies by doing the projects in different domains.
                                 </p>
                             </details>
                             <details className="bg-white rounded-xl p-6 shadow-lg border-2 border-gray-200 hover:border-orange-300 transition-all">
@@ -1149,7 +1132,73 @@ function Home() {
                                         </p>
                                     )}
                                 </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Will you bring your own laptop with ROS installed? <span className="text-red-500">*</span>
+                                    </label>
+                                    <p className="text-xs text-gray-500 mb-3">
+                                        Not sure how to install ROS? Follow the official guide here:&nbsp;
+                                        <a
+                                            href="https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debs.html#install-ros-2-packages"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-orange-600 font-semibold hover:underline"
+                                        >
+                                            ROS 2 Humble Installation (Ubuntu)
+                                        </a>
+                                    </p>
 
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <label
+                                            className={`flex items-center justify-center gap-3 px-4 py-3 border-2 rounded-xl cursor-pointer transition-all ${
+                                                formData.bringLaptop === "yes"
+                                                    ? "border-orange-500 bg-orange-50 text-orange-700"
+                                                    : "border-gray-200 bg-white text-gray-700 hover:border-orange-300"
+                                            } ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
+                                        >
+                                            <input
+                                                type="radio"
+                                                name="bringLaptop"
+                                                value="yes"
+                                                checked={formData. bringLaptop === "yes"}
+                                                onChange={handleChange}
+                                                disabled={isSubmitting}
+                                                className="w-4 h-4 text-orange-600 focus:ring-orange-500"
+                                            />
+                                            <span className="font-semibold">Yes</span>
+                                        </label>
+                                        <label
+                                            className={`flex items-center justify-center gap-3 px-4 py-3 border-2 rounded-xl cursor-pointer transition-all ${
+                                                formData.bringLaptop === "no"
+                                                    ? "border-orange-500 bg-orange-50 text-orange-700"
+                                                    : "border-gray-200 bg-white text-gray-700 hover:border-orange-300"
+                                            } ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
+                                        >
+                                            <input
+                                                type="radio"
+                                                name="bringLaptop"
+                                                value="no"
+                                                checked={formData.bringLaptop === "no"}
+                                                onChange={handleChange}
+                                                disabled={isSubmitting}
+                                                className="w-4 h-4 text-orange-600 focus:ring-orange-500"
+                                            />
+                                            <span className="font-semibold">No</span>
+                                        </label>
+                                    </div>
+                                    {errors.bringLaptop && (
+                                        <p className="text-red-500 text-sm mt-1.5 flex items-center gap-1">
+                                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                <path
+                                                    fillRule="evenodd"
+                                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                                    clipRule="evenodd"
+                                                />
+                                            </svg>
+                                            {errors.bringLaptop}
+                                        </p>
+                                    )}
+                                </div>
                                 <div className="border-t-2 border-gray-100 pt-6 mt-6">
                                     <div className="bg-linear-to-br from-orange-50 to-amber-50 rounded-xl p-5 border-2 border-orange-200">
                                         <div className="text-center mb-4">
