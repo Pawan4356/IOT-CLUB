@@ -7,12 +7,12 @@ import ScrollToTop from './components/ScrollToTop.jsx';
 
 function App() {
   return (
-    <>
+    <ClickSpark sparkColor="#FFA500" sparkSize={12}>
       <ScrollToTop />
       <Header />
       <Outlet />
       <Footer />
-    </>
+    </ClickSpark>
   )
 }
 

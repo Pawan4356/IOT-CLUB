@@ -2,7 +2,7 @@ import './index.css'
 import App from './App.jsx'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { Home, TeamMembers, Gallery, Contact, NotFound } from './components/index.js'
+import { HomePage, GalleryPage, TeamPage, ErrorPage } from './pages/index.js'
 import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext.jsx'
 import AuthCallback from './components/Auth/AuthCallback.jsx'
@@ -10,12 +10,12 @@ import AuthCallback from './components/Auth/AuthCallback.jsx'
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path='/' element={<App />}>
-      <Route path='' element={<Home />} />
-      <Route path='team' element={<TeamMembers />} />
-      <Route path='gallery' element={<Gallery />} />
-      <Route path='contact' element={<Contact />} />
+      <Route path='' element={<HomePage />} />
+      <Route path='team' element={<TeamPage />} />
+      <Route path='gallery' element={<GalleryPage />} />
+      {/* <Route path='contact' element={<ContactPage />} /> */}
       <Route path='auth/callback' element={<AuthCallback />} />
-      <Route path='*' element={<NotFound />} />
+      <Route path='*' element={<ErrorPage />} />
     </Route>
   )
 )
