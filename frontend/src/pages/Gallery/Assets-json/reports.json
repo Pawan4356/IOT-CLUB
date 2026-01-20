@@ -1,0 +1,39 @@
+{
+  "reports": [
+    {
+      "id": 1,
+      "category": "Workshop",
+      "title": "Introduction Workshop-1 Report",
+      "date": "6 July 2019",
+      "file": "/reports/Introduction_Workshop-1_Report_6_July_2019.pdf"
+    },
+    {
+      "id": 2,
+      "category": "Workshop",
+      "title": "IOT Workshop-2 Report",
+      "date": "13 Sept 2019",
+      "file": "/reports/IOT_Workshop-2 report_13_Sept_2019.pdf"
+    },
+    {
+      "id": 3,
+      "category": "Project",
+      "title": "IoT AC Automation Project Report",
+      "date": "",
+      "file": "/reports/IoT_AC_Automation_Project_Report.pdf"
+    },
+    {
+      "id": 4,
+      "category": "Project",
+      "title": "IoT Projector Controller Report",
+      "date": "",
+      "file": "/reports/IoT_Projector_Controller_Report.pdf"
+    },
+    {
+      "id": 5,
+      "category": "Project",
+      "title": "Motion Sensor Based Light Report",
+      "date": "",
+      "file": "/reports/Motion sensed light report.pdf"
+    }
+  ]
+}

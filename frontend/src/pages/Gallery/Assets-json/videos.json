@@ -1,0 +1,28 @@
+{
+    "videos": [
+        {
+            "id": 1,
+            "title": "Drone Video",
+            "thumbnail": "/videos/about-drone-video.png",
+            "video": "/videos/Drone_video.mp4"
+        },
+        {
+            "id": 2,
+            "title": "Motion Sensor Robot",
+            "thumbnail": "/videos/about-motion-sensor-robot.jpg",
+            "video": "/videos/Archil_Project_Motion_Sensor.mp4"
+        },
+        {
+            "id": 3,
+            "title": "IOT Club Introduction",
+            "thumbnail": "/videos/abou-intro-video.png",
+            "video": "/videos/IOT CLub Video.mp4"
+        },
+        {
+            "id": 4,
+            "title": "VJ CO IOT Club",
+            "thumbnail": "/videos/about-video.png",
+            "video": "/videos/VJ_CO_IOT_Club_v1.1.mp4"
+        }
+    ]
+}
