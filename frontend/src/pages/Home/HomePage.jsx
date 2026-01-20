@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import { useAuth } from "../../contexts/AuthContext.jsx";
-import { registrationsService } from "../../services/database.js";
+import { registrationsService } from "../../services";
 import { useEvents, useRegistrations, useEnrollment } from "../../hooks";
 import { AuthModal } from "../../components";
 
-// Home Components (Sections & Elements)
 import {
     HeroSection,
     EventsSection,
@@ -212,7 +211,6 @@ const HomePage = () => {
 
                 {/* Page Sections */}
                 <HeroSection user={user} onGetStarted={handleGetStarted} />
-                
                 <EventsSection
                     events={events}
                     loading={eventsLoading}
@@ -221,17 +219,11 @@ const HomePage = () => {
                     getEnrollmentStatus={getEnrollmentStatus}
                     enrollLoading={enrollLoading || countsLoading}
                 />
-
                 <ProjectsSection />
-                
                 <AboutSection />
-                
                 <StatsSection />
-                
                 <ServicesSection />
-                
                 <FacultySection />
-                
                 <FAQSection />
             </div>
     );
