@@ -68,12 +68,12 @@ export const AuthProvider = ({ children }) => {
     if (error) throw error;
   };
 
-  const resetPassword = async (email) => {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
-    if (error) throw error;
-  };
+    const resetPassword = async (email) => {
+        const { error } = await supabase. auth.resetPasswordForEmail(email, {
+            redirectTo: 'http://localhost:5173/reset-password',  // Explicit localhost URL
+        });
+        if (error) throw error;
+    };
 
   const updateProfile = async (updates) => {
     const { data, error } = await supabase.auth.updateUser({
@@ -82,17 +82,25 @@ export const AuthProvider = ({ children }) => {
     if (error) throw error;
     return data;
   };
+    const updatePassword = async (newPassword) => {
+        const { data, error } = await supabase. auth.updateUser({
+            password: newPassword,
+        });
+        if (error) throw error;
+        return data;
+    };
 
-  const value = {
-    user,
-    session,
-    loading,
-    signUp,
-    signIn,
-    signOut,
-    resetPassword,
-    updateProfile,
-  };
+    const value = {
+        user,
+        session,
+        loading,
+        signUp,
+        signIn,
+        signOut,
+        resetPassword,
+        updateProfile,
+        updatePassword,
+    };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
