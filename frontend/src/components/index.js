@@ -20,3 +20,8 @@ export { default as FAQSection } from './Home/Sections/FAQSection';
 export { default as EventCard } from './Home/Elements/EventCard';
 export { default as EnrollButton } from './Home/Elements/EnrollButton';
 export { default as EnrollmentModal } from './Home/Elements/EnrollmentModal';
+
+// Gallery Page Sections
+export {default as ImageGallerySection} from "../components/Gallery/Sections/ImageGallerySection";
+export {default as ReportsSection} from "../components/Gallery/Sections/ReportsSection";
+export {default as VideosSection} from "../components/Gallery/Sections/VideosSection";
