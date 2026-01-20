@@ -141,6 +141,7 @@ const EnrollmentModal = ({
                                 <option value="IC">Instrumentation and Control</option>
                                 <option value="CH">Chemical</option>
                                 <option value="AI">Artificial intelligence and Data Science</option>
+                                <option value="OTHER">OTHER</option>
                             </select>
                         </div>
 
