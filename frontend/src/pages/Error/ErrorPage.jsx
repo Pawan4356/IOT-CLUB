@@ -1,11 +1,28 @@
-import React from 'react'
+import React from 'react';
+import './ErrorPage.css';
 
 function NotFound() {
   return (
-    <div className='flex justify-center'>
-      <h1 className='text-5xl text-center text-orange-700 font-mono bg-black min-w-12.5 m-3 p-3 border-2 rounded-2xl border-white'>404 - Not Found!</h1>
+    <div className="error-container">
+      <div className="rail">
+        {[...Array(10)].map((_, i) => (
+          <React.Fragment key={i}>
+            <div className="stamp four"></div>
+            <div className="stamp zero"></div>
+          </React.Fragment>
+        ))}
+      </div>
+      <div className="world">
+        <div className="forward">
+          <div className="box">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="wall"></div>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
-  )
+  );
 }
 
-export default NotFound
+export default NotFound;
