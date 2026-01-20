@@ -1,0 +1,298 @@
+{
+  "team_members": [
+    {
+      "name": "Pawankumar Navinchandra",
+      "degree": "B.Tech Computer Engineering",
+      "batch": "2027",
+      "image": "/teammembers/Pawan.jpg"
+    },
+    {
+      "name": "Krutarth Patel",
+      "degree": "B.Tech Computer Engineering",
+      "batch": "2027",
+      "image": "/teammembers/Krutarth-Patel.png"
+    },
+    {
+      "name": "Vadid Shaikh",
+      "degree": "B.Tech Computer Engineering",
+      "batch": "2027",
+      "image": "/teammembers/Vadid.png"
+    },
+    {
+      "name": "Vijay Singh",
+      "degree": "B.Tech Computer Engineering",
+      "batch": "2027",
+      "image": "/teammembers/Vijay-Singh.png"
+    },
+    {
+      "name": "Mangalya Desai",
+      "degree": "B.Tech Computer Engineering",
+      "batch": "2027",
+      "image": "/teammembers/Mangalya.png"
+    },
+    {
+      "name": "Devanshu Mangal",
+      "degree": "B.Tech Computer Engineering",
+      "batch": "2027",
+      "image": "/teammembers/Devanshu-Mangal.png"
+    },
+    {
+      "name": "Dhairya Prajapati",
+      "degree": "B.Tech Computer Engineering",
+      "batch": "2027",
+      "image": "/teammembers/Dhairya-Prajapati.png"
+    },
+    {
+      "name": "Rudra Baru",
+      "degree": "B.Tech Computer Engineering",
+      "batch": "2027",
+      "image": "/teammembers/Rudra-Baru.png"
+    },
+    {
+      "name": "Krish Patel",
+      "degree": "B.Tech Computer Engineering",
+      "batch": "2027",
+      "image": "/teammembers/Krish-Patel.png"
+    },
+    {
+      "name": "Aarav Patel",
+      "degree": "B.Tech Computer Engineering",
+      "batch": "2027",
+      "image": "/teammembers/Aarav-Patel.png"
+    },
+    {
+      "name": "Aayushi",
+      "degree": "B.Tech Computer Engineering",
+      "batch": "2027",
+      "image": "/teammembers/Aayushi.png"
+    },
+    {
+      "name": "Dev Patel",
+      "degree": "B.Tech Computer Engineering",
+      "batch": "2027",
+      "image": "/teammembers/DevPatel.jpeg"
+    },
+    {
+      "name": "Krutarth Sonicha",
+      "degree": "B.Tech Electronics & Communication",
+      "batch": "2028",
+      "image": "/teammembers/Krutarth-Sonicha.png"
+    },
+    {
+      "name": "Dhwanil Desai",
+      "degree": "B.Tech Electronics & Communication",
+      "batch": "2028",
+      "image": "/teammembers/Dhwanil-Desai.png"
+    },
+    {
+      "name": "Meet Jariwala",
+      "degree": "B.Tech Computer Engineering",
+      "batch": "2026",
+      "image": "/teammembers/Meet Jariwala.png"
+    },
+    {
+      "name": "Fenil Patel",
+      "degree": "B.Tech Computer Engineering",
+      "batch": "2026",
+      "image": "/teammembers/Fenil_patel.jpg"
+    },
+    {
+      "name": "Aadyanshi Patel",
+      "degree": "B.Tech Computer Engineering",
+      "batch": "2026",
+      "image": "/teammembers/Adyanshi Patel.jpg"
+    },
+    {
+      "name": "Aakash Jaiswal",
+      "degree": "B.Tech Computer Engineering",
+      "batch": "2026",
+      "image": "/teammembers/Aakash Jaiswal.jpg"
+    },
+    {
+      "name": "Anika Mehta",
+      "degree": "B.Tech Computer Engineering",
+      "batch": "2026",
+      "image": "/teammembers/Anika Mehta.jpg"
+    },
+    {
+      "name": "Anjali Jariwala",
+      "degree": "B.Tech Computer Engineering",
+      "batch": "2026",
+      "image": "/teammembers/Anjali Jariwala.jpg"
+    },
+    {
+      "name": "Dev Sadisatsowala",
+      "degree": "B.Tech Computer Engineering",
+      "batch": "2026",
+      "image": "/teammembers/Dev Sadisatsowala.jpg"
+    },
+    {
+      "name": "Jainil Tailor",
+      "degree": "B.Tech Computer Engineering",
+      "batch": "2026",
+      "image": "/teammembers/Jainil Tailor_.jpg"
+    },
+    {
+      "name": "Nishita Adhisheriya",
+      "degree": "B.Tech Computer Engineering",
+      "batch": "2027",
+      "image": "/teammembers/Nishita Adhisheriya.jpg"
+    },
+    {
+      "name": "Jit Prajapati",
+      "degree": "B.Tech Computer Engineering",
+      "batch": "2027",
+      "image": "/teammembers/Jit_Prajapati.jpg"
+    },
+    {
+      "name": "Meet Oza",
+      "degree": "B.Tech Computer Engineering",
+      "batch": "2026",
+      "image": "/teammembers/Meet Oza.jpg"
+    },
+    {
+      "name": "Khushee Maru",
+      "degree": "B.Tech Computer Engineering",
+      "batch": "2026",
+      "image": "/teammembers/Khushee Maru.jpg"
+    },
+    {
+      "name": "Tisha Tandel",
+      "degree": "B.Tech Computer Engineering",
+      "batch": "2026",
+      "image": "/teammembers/Tisha Tandel_.jpg"
+    },
+    {
+      "name": "Viraj",
+      "degree": "B.Tech Computer Engineering",
+      "batch": "2026",
+      "image": "/teammembers/Viraj shah.jpg"
+    },
+    {
+      "name": "Abdul Kadir",
+      "degree": "B.Tech Computer Engineering",
+      "batch": "2025",
+      "image": "/teammembers/Abdul Kadir.JPG"
+    },
+    {
+      "name": "Fenil Chauhan",
+      "degree": "B.Tech Computer Engineering",
+      "batch": "2025",
+      "image": "/teammembers/Fenil Chauhan.jpg"
+    },
+    {
+      "name": "Riddhika Cheruku",
+      "degree": "B.Tech Computer Engineering",
+      "batch": "2025",
+      "image": "/teammembers/Riddhika_Cheruku.jpeg"
+    },
+    {
+      "name": "Aarohi Desai",
+      "degree": "B.Tech Computer Engineering",
+      "batch": "2025",
+      "image": "/teammembers/Aarohi_Desai.jpg"
+    },
+    {
+      "name": "Aditi Desai",
+      "degree": "B.Tech Computer Engineering",
+      "batch": "2025",
+      "image": "/teammembers/Aditi Desai.jpg"
+    },
+    {
+      "name": "Ayush Kayasth",
+      "degree": "B.Tech Computer Engineering",
+      "batch": "2025",
+      "image": "/teammembers/Ayush Kayasth_.jpg"
+    },
+    {
+      "name": "Deep Desai",
+      "degree": "B.Tech Computer Engineering",
+      "batch": "2025",
+      "image": "/teammembers/Deep Desai.jpg"
+    },
+    {
+      "name": "Khare Kirtan",
+      "degree": "B.Tech Computer Engineering",
+      "batch": "2025",
+      "image": "/teammembers/Khare Kirtan.jpg"
+    },
+    {
+      "name": "Kirtan Kothwala",
+      "degree": "B.Tech Computer Engineering",
+      "batch": "2025",
+      "image": "/teammembers/Kirtan Kothwala.JPG"
+    },
+    {
+      "name": "Manushri Venkateshan",
+      "degree": "B.Tech Computer Engineering",
+      "batch": "2025",
+      "image": "/teammembers/Manushri V..jpg"
+    },
+    {
+      "name": "Radha Gohil",
+      "degree": "B.Tech Computer Engineering",
+      "batch": "2025",
+      "image": "/teammembers/Radha_Gohil.jpg"
+    },
+    {
+      "name": "Yash Dangi",
+      "degree": "B.Tech Computer Engineering",
+      "batch": "2025",
+      "image": "/teammembers/Yash Dangi.JPG"
+    },
+    {
+      "name": "Priya Sisodiya",
+      "degree": "B.Tech Computer Engineering",
+      "batch": "2025",
+      "image": "/teammembers/Priya Sisodiya_.jpg"
+    },
+    {
+      "name": "Het Parekh",
+      "degree": "B.E. Computer Engineering",
+      "batch": "2023",
+      "image": "/teammembers/hetparekh.jpg"
+    },
+    {
+      "name": "Brijesh Kargar",
+      "degree": "B.E. Computer Engineering",
+      "batch": "2023",
+      "image": "/teammembers/brijeshkargar.jpg"
+    },
+    {
+      "name": "Brijesh Patadiya",
+      "degree": "B.E. Computer Engineering",
+      "batch": "2023",
+      "image": "/teammembers/brijesh.jpg"
+    },
+    {
+      "name": "Manav Dobariya",
+      "degree": "B.E. Computer Engineering",
+      "batch": "2023",
+      "image": "/teammembers/manav.jpg"
+    },
+    {
+      "name": "Abhishek Kumbharni",
+      "degree": "B.E. Computer Engineering",
+      "batch": "2023",
+      "image": "/teammembers/abhishek.jpeg"
+    },
+    {
+      "name": "Keyur Kakadiya",
+      "degree": "B.E. Computer Engineering",
+      "batch": "2023",
+      "image": "/teammembers/keyur.jpg"
+    },
+    {
+      "name": "Meet Savaj",
+      "degree": "B.E. Computer Engineering",
+      "batch": "2023",
+      "image": "/teammembers/meet.jpg"
+    },
+    {
+      "name": "Vandan",
+      "degree": "B.E. Computer Engineering",
+      "batch": "2023",
+      "image": "/teammembers/vandan.jpeg"
+    }
+  ]
+}
