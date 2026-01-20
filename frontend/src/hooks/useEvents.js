@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { eventsService } from "../services/database.js";
+import { eventsService } from "../services";
 
 const FALLBACK_EVENTS = [
     {
@@ -13,7 +13,7 @@ const FALLBACK_EVENTS = [
     },
 ];
 
-export const useEvents = () => {
+const useEvents = () => {
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -41,3 +41,5 @@ export const useEvents = () => {
 
     return { events, loading, error };
 };
+
+export default useEvents;

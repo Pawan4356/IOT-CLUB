@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { registrationsService } from "../services/database.js";
+import { registrationsService } from "../services";
 
-export const useRegistrations = (userId) => {
+const useRegistrations = (userId) => {
     const [enrolledEventIds, setEnrolledEventIds] = useState(new Set());
     const [eventRegistrationStatus, setEventRegistrationStatus] = useState(new Map());
     const [registrationCounts, setRegistrationCounts] = useState(new Map());
@@ -114,3 +114,5 @@ export const useRegistrations = (userId) => {
         updateEnrollment,
     };
 };
+
+export default useRegistrations;

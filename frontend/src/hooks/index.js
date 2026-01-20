@@ -1,3 +1,3 @@
-export { useEvents } from "./useEvents";
-export { useRegistrations } from "./useRegistrations";
-export { useEnrollment } from "./useEnrollment";
+export { default as useEvents } from "./useEvents";
+export { default as useRegistrations } from "./useRegistrations";
+export { default as useEnrollment } from "./useEnrollment";

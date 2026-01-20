@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { registrationsService, profilesService } from "../services/database.js";
+import { registrationsService, profilesService } from "../services";
 
-export const useEnrollment = () => {
+const useEnrollment = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitStatus, setSubmitStatus] = useState(null);
     const [errors, setErrors] = useState({});
@@ -154,3 +154,5 @@ export const useEnrollment = () => {
         submitEnrollment,
     };
 };
+
+export default useEnrollment;
