@@ -137,6 +137,8 @@ function Signup({onSwitchToLogin }) {
                 <option value="IC">IC</option>
                 <option value="CH">CH</option>
                 <option value="EL">EL</option>
+                <option value="MCA">MCA</option>
+                <option value="OTHER">OTHER</option>
               </select>
             </div>
 
