@@ -297,7 +297,7 @@ const EnrollmentModal = ({
                             <div className="flex justify-center mb-5">
                                 <div className="bg-white p-4 rounded-2xl border-2 border-orange-500 shadow-lg transform hover:scale-105 transition-transform">
                                     <img
-                                        src="/UPI_QR.png"
+                                        src="/FULL.png"
                                         alt="UPI QR Code"
                                         className="w-52 h-52 sm:w-60 sm:h-60"
                                         onError={(e) => {
